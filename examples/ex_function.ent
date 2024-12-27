@@ -1,0 +1,8 @@
+int gerar_num() {
+    retorna 5
+}
+
+auto inicio() {
+    auto b = gerar_num()
+    escreva(b)
+}

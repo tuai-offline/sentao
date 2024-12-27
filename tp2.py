@@ -5,27 +5,32 @@ import sys
 
 literals = '{}[]()=,'
 reserved = {
-    'ate': 'ATE',
-    'auto': 'AUTO',
-    'enquanto': 'ENQUANTO',
-    'entao': 'ENTAO',
-    'erro': 'ERRO',
-    'escreva': 'ESCREVA',
-    'faca': 'FACA',
-    'intervalo': 'INTERVALO',
-    'leia': 'LEIA',
-    'no': 'NO',
-    'para': 'PARA',
-    'que': 'QUE',
-    'repita': 'REPITA',
-    'retorna': 'RETORNA',
-    'se': 'SE',
-    'senao': 'SENAO'
+    'ate': '_ATE',
+    'auto': '_AUTO',
+    'bool': '_BOOL',
+    'car': '_CAR',
+    'cars': '_CARS',
+    'enquanto': '_ENQUANTO',
+    'entao': '_ENTAO',
+    'erro': '_ERRO',
+    'escreva': '_ESCREVA',
+    'faca': '_FACA',
+    'int': '_INT',
+    'intervalo': '_INTERVALO',
+    'leia': '_LEIA',
+    'no': '_NO',
+    'para': '_PARA',
+    'que': '_QUE',
+    'real': '_REAL',
+    'repita': '_REPITA',
+    'retorna': '_RETORNA',
+    'se': '_SE',
+    'senao': '_SENAO',
 }
 
 tokens = [
     'ID', 'STRING', 'INT', 'REAL', 'SOMA', 'SUBT', 'MULT', 'DIV', 'MAIORIG',
-    'MENORIG', 'MAIORQ', 'MENORQ', 'IG', 'DIF'
+    'MENORIG', 'MAIORQ', 'MENORQ', 'IG',  'NEG', 'DIF', 'OU', 'E',
 ] + list(reserved.values())
 
 
@@ -94,9 +99,20 @@ def t_IG(t):
     r'=='
     return t
 
+def t_NEG(t):
+    r'!'
+    return t
 
 def t_DIF(t):
     r'!='
+    return t
+  
+def t_OU(t):
+    r'\|\|'
+    return t
+
+def t_E(t):
+    r'&&'
     return t
 
 
