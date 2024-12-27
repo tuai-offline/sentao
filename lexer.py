@@ -8,16 +8,14 @@ reserved = {
     'ate': '_ATE',
     'auto': '_AUTO',
     'bool': '_BOOL',
+    'dynamic': '_DYNAMIC',
     'car': '_CAR',
     'cars': '_CARS',
     'enquanto': '_ENQUANTO',
     'entao': '_ENTAO',
-    'erro': '_ERRO',
-    'escreva': '_ESCREVA',
     'faca': '_FACA',
     'int': '_INT',
     'intervalo': '_INTERVALO',
-    'leia': '_LEIA',
     'no': '_NO',
     'para': '_PARA',
     'que': '_QUE',
@@ -29,12 +27,28 @@ reserved = {
 }
 
 tokens = [
-    'ID', 'STRING', 'INT', 'REAL', 'SOMA', 'SUBT', 'MULT', 'DIV', 'MAIORIG',
-    'MENORIG', 'MAIORQ', 'MENORQ', 'IG',  'NEG', 'DIF', 'OU', 'E',
+    'ID',
+    'INT',
+    'CAR',
+    'CARS',
+    'REAL',
+    'SOMA',
+    'SUBT',
+    'MULT',
+    'DIV',
+    'MAIORIG',
+    'MENORIG',
+    'MAIORQ',
+    'MENORQ',
+    'IG',
+    'NEG',
+    'DIF',
+    'OU',
+    'E',
 ] + list(reserved.values())
 
 
-def t_STRING(t):
+def t_CARS(t):
     r'\"[^\"]*\"'
     return t
 
@@ -53,6 +67,10 @@ def t_REAL(t):
 def t_INT(t):
     r'\d+'
     return t
+
+
+def t_CAR(t):
+    r"\'[^\']\'"
 
 
 def t_SOMA(t):
@@ -99,17 +117,21 @@ def t_IG(t):
     r'=='
     return t
 
+
 def t_NEG(t):
     r'!'
     return t
 
+
 def t_DIF(t):
     r'!='
     return t
-  
+
+
 def t_OU(t):
     r'\|\|'
     return t
+
 
 def t_E(t):
     r'&&'

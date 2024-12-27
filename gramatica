@@ -1,57 +1,71 @@
-Programa      : Declaracao
-              | Expressao
-              | EstruturaControle
-              | Programa Programa
+Programa      : Acao
+              | Acao Programa
 
-Declaracao    : TipoVariavel ListaVariaveis
-              | TipoVariavel Variavel "=" Inicializacao
+Acao          : DeclVariavel
+              | DeclFuncao
+              | Atribuicao
+              | Condicao
+              | Ciclo
 
-TipoVariavel  : INTEIRO
+DeclVariavel  : Tipo LVariaveis
+
+Tipo          : INTEIRO
               | AUTO
               | DYNAMIC
               | CARACTER
               | CARACTERES
+              | Tipo [ INT ]
 
-ListaVariaveis: Variavel
-              | Variavel "," ListaVariaveis
+LVariaveis    : Variavel
+              | Variavel "," LVariaveis
 
 Variavel      : ID
-              | ID "[]" 
+              | Atribuicao 
 
-Inicializacao : Lista
-              | Matriz
-              | FRASE
+Atribuicao    : ID = Expressao
 
-Lista         : "[" Elementos "]"
+Funcao        : ID "(" ")"
 
-Matriz        : "[[" Elementos "], " MatrizLinhas "]]"
+Expressao     : ID
+              | TipoConstante
+              | Funcao
+              | Expressao OpBinario Expressao
+              | OpUnario Expressao
+              | ( Expressao )
 
-MatrizLinhas  : Elementos
-              | Elementos ", " MatrizLinhas
+OpBinario     : _SOMA
+              | _SUBT
+              | _MULT
+              | _DIV
+              | _MENORQ
+              | _MAIORQ
+              | _MENORIG
+              | _MAIORIG
+              | _IG
+              | _DIF
+              | _E
+              | _OU
 
-Elementos     : NUM
-              | NUM "," Elementos
+OpUnario      : _NEG
+              : _SUBT
 
-Expressao     : Variavel "[" Indice "]"
-              | Variavel "[" Indice "," Indice "]"
-              | Variavel "[," Indice "]"
-              | Variavel "[Indefinido]"
-              | FUNCAO "(" Argumentos ")"
-              | EXPRESSAO "=" EXPRESSAO
-              | EXPRESSAO OPERATOR EXPRESSAO
+TipoConstante : INT
+              | REAL
+              | CAR
+              | CARS
+              | BOOL
+              | [ LTipoConstante ]
 
-Indice        : NUM
-              | Indefinido
+LTipoConstante: TipoConstante
+              | TipoConstante , LTipoConstante
 
-Argumentos    : EXPRESSAO
-              | EXPRESSAO "," Argumentos
+Condicao      : _SE "(" Expressao ")" _ENTAO "{" Programa "}" 
+              | _SE "(" Expressao ")" _ENTAO "{" Programa "}" _SENAO "{" Programa "}"
+              | _SE "(" Expressao ")" _ENTAO "{" Programa "}" _SENAO Condicao
 
-Funcoes       : S
-              | T
+Ciclo         : _PARA ID _NO _INTERVALO "(" INT "," INT ")" "{" Programa "}"
+              | _ENQUANTO "(" Expressao ")" _FACA "{" Programa "}"
+              | _REPITA "{" Programa "}" _ATE _QUE "(" Expressao ")"
 
-EstruturaControle : SE "(" Condicao ")" ENTAO "{" Programa "}" 
-                  | SE "(" Condicao ")" ENTAO "{" Programa "}" SENAO "{" Programa "}"
-                  | SE "(" Condicao ")" ENTAO "{" Programa "}" SENAO_SE "(" Condicao ")" "{" Programa "}"
-                  | PARA ID NO FUNCAO "(" Intervalo ")" "{" Programa "}"
-                  | ENQUANTO "(" Condicao ")" FACA "{" Programa "}"
-                  | REPITA "{" Programa "}" ATE_QUE "(" Condicao ")"
+DeclFuncao    : Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"
+              | Tipo ID "(" ")" "{" _RETORNA Expressao "}"

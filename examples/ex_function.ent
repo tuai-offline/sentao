@@ -3,6 +3,6 @@ int gerar_num() {
 }
 
 auto inicio() {
-    auto b = gerar_num()
+    auto b = gerar_num() / 2
     escreva(b)
 }
