@@ -1,8 +1,8 @@
 auto t = 54
-se (t ig 54) entao {
-    imprime(t)
-} senao se (t ig 15) {
-    imprime(t)
+se (t == 54) entao {
+    escreva(t)
+} senao se (t == 15) {
+    escreva(t)
 } senao {
-    imprime("Erro")
+    escreva("Erro")
 }

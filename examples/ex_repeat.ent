@@ -1,5 +1,5 @@
 auto t = 0
 repita {
-    imprime(t)
+    escreva(t)
     t = t + 1
-} ate que (t maq 10)
+} ate que (t > 10)
