@@ -1,0 +1,4 @@
+auto t = 0
+enquanto (t meq 10) faca {
+    imprime(t)
+}

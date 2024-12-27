@@ -1,0 +1,8 @@
+auto t = 54
+se (t ig 54) entao {
+    imprime(t)
+} senao se (t ig 15) {
+    imprime(t)
+} senao {
+    imprime("Erro")
+}
