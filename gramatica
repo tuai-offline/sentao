@@ -1,0 +1,57 @@
+Programa      : Declaracao
+              | Expressao
+              | EstruturaControle
+              | Programa Programa
+
+Declaracao    : TipoVariavel ListaVariaveis
+              | TipoVariavel Variavel "=" Inicializacao
+
+TipoVariavel  : INTEIRO
+              | AUTO
+              | DYNAMIC
+              | CARACTER
+              | CARACTERES
+
+ListaVariaveis: Variavel
+              | Variavel "," ListaVariaveis
+
+Variavel      : ID
+              | ID "[]" 
+
+Inicializacao : Lista
+              | Matriz
+              | FRASE
+
+Lista         : "[" Elementos "]"
+
+Matriz        : "[[" Elementos "], " MatrizLinhas "]]"
+
+MatrizLinhas  : Elementos
+              | Elementos ", " MatrizLinhas
+
+Elementos     : NUM
+              | NUM "," Elementos
+
+Expressao     : Variavel "[" Indice "]"
+              | Variavel "[" Indice "," Indice "]"
+              | Variavel "[," Indice "]"
+              | Variavel "[Indefinido]"
+              | FUNCAO "(" Argumentos ")"
+              | EXPRESSAO "=" EXPRESSAO
+              | EXPRESSAO OPERATOR EXPRESSAO
+
+Indice        : NUM
+              | Indefinido
+
+Argumentos    : EXPRESSAO
+              | EXPRESSAO "," Argumentos
+
+Funcoes       : S
+              | T
+
+EstruturaControle : SE "(" Condicao ")" ENTAO "{" Programa "}" 
+                  | SE "(" Condicao ")" ENTAO "{" Programa "}" SENAO "{" Programa "}"
+                  | SE "(" Condicao ")" ENTAO "{" Programa "}" SENAO_SE "(" Condicao ")" "{" Programa "}"
+                  | PARA ID NO FUNCAO "(" Intervalo ")" "{" Programa "}"
+                  | ENQUANTO "(" Condicao ")" FACA "{" Programa "}"
+                  | REPITA "{" Programa "}" ATE_QUE "(" Condicao ")"
