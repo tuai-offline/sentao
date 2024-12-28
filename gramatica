@@ -7,7 +7,7 @@ Acao          : DeclVariavel
               | Condicao
               | Ciclo
 
-DeclVariavel  : Tipo LVariaveis
+DeclVariavel  : Tipo LDeclVariaveis
 
 Tipo          : INTEIRO
               | AUTO
@@ -16,11 +16,11 @@ Tipo          : INTEIRO
               | CARACTERES
               | Tipo [ INT ]
 
-LVariaveis    : Variavel
-              | Variavel "," LVariaveis
+LDeclVariaveis: DeclAtriVariavel
+              | DeclAtriVariavel "," LDeclVariaveis
 
-Variavel      : ID
-              | Atribuicao 
+DeclAtriVariavel: ID
+                | ID = Expressao 
 
 Atribuicao    : ID = Expressao
 
@@ -33,21 +33,22 @@ Expressao     : ID
               | OpUnario Expressao
               | ( Expressao )
 
-OpBinario     : _SOMA
-              | _SUBT
-              | _MULT
-              | _DIV
-              | _MENORQ
-              | _MAIORQ
-              | _MENORIG
-              | _MAIORIG
-              | _IG
-              | _DIF
-              | _E
-              | _OU
+OpBinario     : SOMA
+              | SUBT
+              | MULT
+              | DIV
+              | MOD
+              | MENORQ
+              | MAIORQ
+              | MENORIG
+              | MAIORIG
+              | IG
+              | DIF
+              | E
+              | OU
 
-OpUnario      : _NEG
-              : _SUBT
+OpUnario      : NEG
+              : SUBT
 
 TipoConstante : INT
               | REAL
