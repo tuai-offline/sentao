@@ -203,22 +203,22 @@ def p_op_binario_MOD(p):
 
 def p_op_binario_MENORQ(p):
     '''OpBinario : MENORQ'''
-    p[0] = p[1]
+    p[0] = 'inf' 
 
 
 def p_op_binario_MAIORQ(p):
     '''OpBinario : MAIORQ'''
-    p[0] = p[1]
+    p[0] = 'sup'
 
 
 def p_op_binario_MENORIG(p):
     '''OpBinario : MENORIG'''
-    p[0] = p[1]
+    p[0] = 'infq'
 
 
 def p_op_binario_MAIORIG(p):
     '''OpBinario : MAIORIG'''
-    p[0] = p[1]
+    p[0] = 'supq'
 
 
 def p_op_binario_IG(p):
@@ -243,7 +243,7 @@ def p_op_binario_OU(p):
 
 def p_op_unario_NEG(p):
     '''OpUnario : NEG'''
-    p[0] = p[1]
+    p[0] = 'neg'
 
 
 def p_op_unario_SUBT(p):
