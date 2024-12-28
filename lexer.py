@@ -1,3 +1,5 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i python3 -p "python3.withPackages(ps: [ ps.ply ])"
 import ply.lex as lex
 import sys
 
@@ -35,6 +37,7 @@ tokens = [
     'SUBT',
     'MULT',
     'DIV',
+    'MOD',
     'MAIORIG',
     'MENORIG',
     'MAIORQ',
@@ -72,6 +75,7 @@ def t_CAR(t):
     r"\'[^\']\'"
     return t
 
+
 def t_SOMA(t):
     r'\+'
     return t
@@ -89,6 +93,11 @@ def t_MULT(t):
 
 def t_DIV(t):
     r'/'
+    return t
+
+
+def t_MOD(t):
+    r'%'
     return t
 
 
