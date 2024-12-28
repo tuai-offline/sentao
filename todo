@@ -1,0 +1,20 @@
+-Linguagem ✅
+-Lexico ✅
+-Gramática 
+-Parse:
+    -Declaração:
+        -Interio ✅
+        -Real
+        -Carácter
+        -Caracteres
+    -Atribuicão ✅
+
+    -Condição:
+        -Se então  ✅
+        -Se então senão 
+        -Se entaõ senão se
+    -Ciclos:
+        -Para x no intervalo (a,b) y
+        -Enquanto x faça y
+        -Repita y ate que x
+
