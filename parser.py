@@ -1,5 +1,3 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p "python3.withPackages(ps: [ ps.ply ])"
 from lexer import tokens
 import ply.yacc as yacc
 import sys
@@ -7,38 +5,58 @@ import sys
 
 def p_programa_acao(p):
     '''Programa : Acao'''
-    pass
-
+    p[0] = p[1]
 
 def p_programa_acao_programa(p):
     '''Programa : Acao Programa'''
-    pass
+    p[0] = p[1]
 
+def p_acao_DeclVariavel(p):
+    '''Acao : DeclVariavel'''
+    p[0] = p[1]
 
-def p_acao(p):
-    '''Acao : DeclVariavel
-            | DeclFuncao
-            | Atribuicao 
-            | Condicao
-            | Ciclo'''
-    pass
+def p_acao_DeclFuncao(p):
+    '''Acao :  DeclFuncao'''
+    p[0] = p[1]
 
+def p_acao_Atribuicao(p):
+    '''Acao : Atribuicao'''
+    p[0] = p[1]
+
+def p_acao_Condicao(p):
+    '''Acao : Condicao'''
+    p[0] = p[1]
+
+def p_acao_Ciclo(p):
+    '''Acao : Ciclo'''
+    p[0] = p[1]
 
 def p_decl_variavel(p):
     '''DeclVariavel : Tipo LVariaveis'''
-    pass
+    p[0] = p[1]
 
+def p_tipo_INT(p):
+    '''Tipo : _INT'''
+    p[0] = p[1]
 
-def p_tipo(p):
-    '''Tipo : _INT
-            | _REAL
-            | _AUTO
-            | _DYNAMIC
-            | _CAR
-            | _CARS
-            | _BOOL'''
-    pass
-
+def p_tipo__REAL(p):
+    '''Tipo : _REAL'''
+    p[0] = p[1]
+def p_tipo_AUTO(p):
+    '''Tipo : _AUTO'''
+    p[0] = p[1]
+def p_tipo_DYNAMIC(p):
+    '''Tipo : _DYNAMIC'''
+    p[0] = p[1]
+def p_tipo__CAR(p):
+    '''Tipo : _CAR'''
+    p[0] = p[1]
+def p_tipo__CARS(p):
+    '''Tipo : _CARS'''
+    p[0] = p[1]        
+def p_tipo_BOOL(p):
+    '''Tipo : _BOOL'''
+    p[0] = p[1]
 
 def p_tipo_array(p):
     '''Tipo : Tipo "[" INT "]"'''
@@ -114,34 +132,76 @@ def p_expressao_grupo(p):
     pass
 
 
-def p_op_binario(p):
-    '''OpBinario : SOMA
-                 | SUBT
-                 | MULT
-                 | DIV
-                 | MENORQ
-                 | MAIORQ
-                 | MENORIG
-                 | MAIORIG
-                 | IG
-                 | DIF
-                 | E
-                 | OU'''
+def p_op_binario_SOMA(p):
+    '''OpBinario : SOMA '''
+    p[0] = p[1]
+
+def p_op_binario_SUBT(p):
+    '''OpBinario : SUBT'''
+    p[0] = p[1]
+
+def p_op_binario_MULT(p):
+    '''OpBinario : MULT'''
+    p[0] = p[1]
+
+def p_op_binario_DIV(p):
+    '''OpBinario : DIV'''
+    p[0] = p[1]
+
+def p_op_binario_MENORQ(p):
+    '''OpBinario : MENORQ'''
+    p[0] = p[1]
+
+def p_op_binario_MAIORQ(p):
+    '''OpBinario : MAIORQ'''
+    p[0] = p[1]
+
+def p_op_binario_MENORIG(p):
+    '''OpBinario : MENORIG'''
+    p[0] = p[1]
+
+def p_op_binario_MAIORIG(p):
+    '''OpBinario : MAIORIG'''
+    p[0] = p[1]
+
+def p_op_binario_IG(p):
+    '''OpBinario : IG'''
+    p[0] = p[1]
+
+def p_op_binario_DIF(p):
+    '''OpBinario : DIF'''
+    p[0] = p[1]
+
+def p_op_binario_E(p):
+    '''OpBinario : E'''
+    p[0] = p[1]
+
+def p_op_binario_OU(p):
+    '''OpBinario : OU'''
     p[0] = p[1]
 
 
-def p_op_unario(p):
-    '''OpUnario : NEG
-                | SUBT'''
-    pass
+def p_op_unario_NEG(p):
+    '''OpUnario : NEG'''
+    p[0] = p[1]
+def p_op_unario_SUBT(p):
+    '''OpUnario : SUBT'''
+    p[0] = p[1]
 
+def p_tipo_constante_INT(p):
+    '''TipoConstante : INT'''
+    p[0] = p[1]
 
-def p_tipo_constante(p):
-    '''TipoConstante : INT
-                     | REAL
-                     | CAR
-                     | CARS'''
+def p_tipo_REAL(p):
+    '''TipoConstante : REAL'''
+    p[0] = p[1]
 
+def p_tipo_CAR(p):
+    '''TipoConstante : CAR'''
+    p[0] = p[1]
+
+def p_tipo_CARS(p):
+    '''TipoConstante : CARS'''
     p[0] = p[1]
 
 
@@ -202,7 +262,6 @@ def p_decl_funcao_simples(p):
 
 def p_error(p):
     return p
-
 
 if __name__ == '__main__':
     parser = yacc.yacc()
