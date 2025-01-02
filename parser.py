@@ -1,8 +1,17 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p "python3.withPackages(ps: [ ps.ply ])"
 from lexer import tokens
 import ply.yacc as yacc
 import sys
+
+
+precedence = (
+    ('left', 'E', 'OU'),  # Operadores lógicos
+    ('left', 'IG', 'DIF'),  # Comparadores
+    ('left', 'MENORQ', 'MAIORQ', 'MENORIG', 'MAIORIG'),
+    ('left', 'SOMA', 'SUBT'),  # Soma e subtração
+    ('left', 'MULT', 'DIV', 'MOD'),  # Multiplicação, divisão e módulo
+    ('right', 'NEG', 'SUBT'),  # Operadores unários (negativo e negação lógica)
+)
+
 
 
 def p_programa_acao(p):
@@ -341,7 +350,7 @@ def p_error(p):
     return p
 
 
-def init_parser(p):
+def init_parser():
     parser.exito = True
     parser.decls = {}
     parser.sp = 0
@@ -350,7 +359,7 @@ def init_parser(p):
 
 
 if __name__ == '__main__':
-    parser = yacc.yacc()
+    parser = yacc.yacc(debug=True, write_tables=True)
     init_parser()
 
     if (len(sys.argv) > 1):
