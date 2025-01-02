@@ -2,16 +2,14 @@ from lexer import tokens
 import ply.yacc as yacc
 import sys
 
-
 precedence = (
     ('left', 'E', 'OU'),  # Operadores lógicos
     ('left', 'IG', 'DIF'),  # Comparadores
     ('left', 'MENORQ', 'MAIORQ', 'MENORIG', 'MAIORIG'),
     ('left', 'SOMA', 'SUBT'),  # Soma e subtração
     ('left', 'MULT', 'DIV', 'MOD'),  # Multiplicação, divisão e módulo
-    ('right', 'NEG', 'SUBT'),  # Operadores unários (negativo e negação lógica)
+    ('right', 'SUBTU', 'NEG'),  # Operadores unários (negativo)
 )
-
 
 
 def p_programa_acao(p):
@@ -167,107 +165,135 @@ def p_expressao_funcao(p):
     p[0] = ('fun', p[1])
 
 
-def p_expressao_bin(p):
-    '''Expressao : Expressao OpBinario Expressao'''
+def p_expressao_bin_soma(p):
+    '''Expressao : Expressao SOMA Expressao'''
 
     p[0] = (p[2], p[1], p[3])
-    print(p[2])
+    print('add')
     pass
 
 
-def p_expressao_un(p):
-    '''Expressao : OpUnario Expressao'''
+def p_expressao_bin_subt(p):
+    '''Expressao : Expressao SUBT Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('sub')
+    pass
+
+
+def p_expressao_bin_mult(p):
+    '''Expressao : Expressao MULT Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('mul')
+    pass
+
+
+def p_expressao_bin_div(p):
+    '''Expressao : Expressao DIV Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('div')
+    pass
+
+
+def p_expressao_bin_mod(p):
+    '''Expressao : Expressao MOD Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('mod')
+    pass
+
+
+def p_expressao_bin_menorq(p):
+    '''Expressao : Expressao MENORQ Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('inf')
+    pass
+
+
+def p_expressao_bin_maiorq(p):
+    '''Expressao : Expressao MAIORQ Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('sup')
+    pass
+
+
+def p_expressao_bin_menorig(p):
+    '''Expressao : Expressao MENORIG Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('infq')
+    pass
+
+
+def p_expressao_bin_maiorig(p):
+    '''Expressao : Expressao MAIORIG Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('supq')
+    pass
+
+
+def p_expressao_bin_ig(p):
+    '''Expressao : Expressao IG Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('equal')
+    pass
+
+
+def p_expressao_bin_dif(p):
+    '''Expressao : Expressao DIF Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('dif')
+    pass
+
+
+def p_expressao_bin_e(p):
+    '''Expressao : Expressao E Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('e')
+    pass
+
+
+def p_expressao_bin_ou(p):
+    '''Expressao : Expressao OU Expressao'''
+
+    p[0] = (p[2], p[1], p[3])
+    print('ou')
+    pass
+
+
+def p_expressao_un_subt(p):
+    '''Expressao : SUBT Expressao %prec SUBTU'''
+    p[0] = ('neg', p[2])
+    print('pushi -1')
+    print('mul')
+
+
+def p_expressao_un_neg(p):
+    '''Expressao : NEG Expressao %prec NEG'''
     pass
 
 
 def p_expressao_grupo(p):
     '''Expressao : "(" Expressao ")"'''
-    pass
-
-
-def p_op_binario_SOMA(p):
-    '''OpBinario : SOMA '''
-    p[0] = 'add'
-
-
-def p_op_binario_SUBT(p):
-    '''OpBinario : SUBT'''
-    p[0] = 'sub'
-
-
-def p_op_binario_MULT(p):
-    '''OpBinario : MULT'''
-    p[0] = 'mul'
-
-
-def p_op_binario_DIV(p):
-    '''OpBinario : DIV'''
-    p[0] = 'div'
-
-
-def p_op_binario_MOD(p):
-    '''OpBinario : MOD'''
-    p[0] = 'mod'
-
-
-def p_op_binario_MENORQ(p):
-    '''OpBinario : MENORQ'''
-    p[0] = 'inf' 
-
-
-def p_op_binario_MAIORQ(p):
-    '''OpBinario : MAIORQ'''
-    p[0] = 'sup'
-
-
-def p_op_binario_MENORIG(p):
-    '''OpBinario : MENORIG'''
-    p[0] = 'infq'
-
-
-def p_op_binario_MAIORIG(p):
-    '''OpBinario : MAIORIG'''
-    p[0] = 'supq'
-
-
-def p_op_binario_IG(p):
-    '''OpBinario : IG'''
-    p[0] = 'equal'
-
-
-def p_op_binario_DIF(p):
-    '''OpBinario : DIF'''
-    p[0] = p[1]
-
-
-def p_op_binario_E(p):
-    '''OpBinario : E'''
-    p[0] = p[1]
-
-
-def p_op_binario_OU(p):
-    '''OpBinario : OU'''
-    p[0] = p[1]
-
-
-def p_op_unario_NEG(p):
-    '''OpUnario : NEG'''
-    p[0] = 'neg'
-
-
-def p_op_unario_SUBT(p):
-    '''OpUnario : SUBT'''
-    p[0] = p[1]
+    p[0] = [2]
 
 
 def p_tipo_constante_INT(p):
     '''TipoConstante : INT'''
-    p[0] = ('INT', p[1])
+    p[0] = ('INT', int(p[1]))
 
 
 def p_tipo_REAL(p):
     '''TipoConstante : REAL'''
-    p[0] = ('REAL', p[1])
+    p[0] = ('REAL', float(p[1]))
 
 
 def p_tipo_CAR(p):
