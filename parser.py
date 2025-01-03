@@ -25,6 +25,7 @@ def p_programa_acao_programa(p):
 def p_acao_funcao(p):
     '''Acao : Funcao'''
 
+
 def p_acao_DeclVariavel(p):
     '''Acao : DeclVariavel'''
     p[0] = p[1]
@@ -162,14 +163,38 @@ def p_decl_atri_variavel(p):
     parser.sp += p[3][1]
     p[0] = p[3]
 
+
 def p_funcao(p):
     '''Funcao : ID "(" ")"'''
     pass
 
 
+def p_indexacao(p):
+    '''Indexacao : ID "[" INT "]"'''
+
+    for scope in reversed(parser.decls):
+        if p[1] in scope:
+            p[0] = ('INT', 1)
+            if int(p[3]) < -scope[p[1]][1] or int(p[3]) >= scope[p[1]][1]:
+                print(f"Acesso em array '{p[1]}' fora dos limites!")
+                break
+            if (int(p[3]) >= 0):
+                idx = scope[p[1]][0] + int(p[3])
+            else:
+                idx = scope[p[1]][0] + scope[p[1]][1] + int(p[3])
+            print(f"pushg {idx}")
+            return
+    else:
+        print(f"Variável '{p[1]}' não declarada em nenhum escopo!")
+
+    parser.exito = False
+    return
+
+
 def p_funcao_escreve(p):
     '''Funcao : _ESCREVE "(" ARG ")"'''
     print("writes")
+
 
 def p_funcao_escrevei(p):
     '''Funcao : _ESCREVEI "(" ARG ")"'''
@@ -180,14 +205,17 @@ def p_funcao_escrever(p):
     '''Funcao : _ESCREVER "(" ARG ")"'''
     print("writer")
 
+
 def p_funcao_ler(p):
     '''Funcao : _LER "(" ")"'''
     print("read")
+
 
 def p_funcao_leri(p):
     '''Funcao : _LERI "(" ")"'''
     print('read')
     print('atoi')
+
 
 def p_funcao_lerr(p):
     '''Funcao : _LERR  "(" ")"'''
@@ -205,18 +233,22 @@ def p_funcao_ARG(p):
     print(f"Variável {p[1]} não declarada em nenhum escopo!")
     parser.exito = False
     return
-    
+
+
 def p_funcao_ARG_INT(p):
     '''ARG : INT'''
     print("pushi", p[1])
+
 
 def p_funcao_ARG_REAL(p):
     '''ARG : REAL'''
     print("pushf", p[1])
 
+
 def p_funcao_ARG_CARS(p):
     '''ARG : CARS'''
     print("pushs", p[1])
+
 
 def p_expressao_id(p):
     '''Expressao : ID'''
@@ -239,8 +271,12 @@ def p_expressao_const(p):
 
 def p_expressao_funcao(p):
     '''Expressao : Funcao'''
-
     p[0] = ('fun', p[1])
+
+
+def p_expressao_indexacao(p):
+    '''Expressao : Indexacao'''
+    p[0] = p[1]
 
 
 def p_expressao_bin_soma(p):

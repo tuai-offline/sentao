@@ -38,9 +38,12 @@ Funcao        : ID "(" ")"
               | _LERI "(" ")"
               | _LERR "(" ")"
 
+Indexacao     : ID "[" INT "]"
+
 Expressao     : ID
               | TipoConstante
               | Funcao
+              | Indexacao
               | Expressao OpBinario Expressao
               | OpUnario Expressao
               | ( Expressao )
@@ -60,7 +63,7 @@ OpBinario     : SOMA
               | OU
 
 OpUnario      : NEG
-              : SUBT
+              | SUBT
 
 TipoConstante : INT
               | REAL

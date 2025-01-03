@@ -72,7 +72,7 @@ def t_REAL(t):
 
 
 def t_INT(t):
-    r'\d+'
+    r'-?\d+'
     return t
 
 
