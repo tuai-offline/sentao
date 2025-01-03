@@ -7,6 +7,10 @@ Acao          : DeclVariavel
               | Condicao
               | Ciclo
 
+Escopo        : '{' entrar Programa '}'
+
+entrar        :
+
 DeclVariavel  : Tipo LDeclVariaveis
 
 Tipo          : INTEIRO
@@ -60,13 +64,13 @@ TipoConstante : INT
 LTipoConstante: TipoConstante
               | TipoConstante , LTipoConstante
 
-Condicao      : _SE "(" Expressao ")" _ENTAO "{" Programa "}" 
-              | _SE "(" Expressao ")" _ENTAO "{" Programa "}" _SENAO "{" Programa "}"
-              | _SE "(" Expressao ")" _ENTAO "{" Programa "}" _SENAO Condicao
+Condicao      : _SE "(" Expressao ")" _ENTAO Escopo 
+              | _SE "(" Expressao ")" _ENTAO Escopo _SENAO Escopo
+              | _SE "(" Expressao ")" _ENTAO Escopo _SENAO Condicao
 
-Ciclo         : _PARA ID _NO _INTERVALO "(" INT "," INT ")" "{" Programa "}"
-              | _ENQUANTO "(" Expressao ")" _FACA "{" Programa "}"
-              | _REPITA "{" Programa "}" _ATE _QUE "(" Expressao ")"
+Ciclo         : _PARA ID _NO _INTERVALO "(" INT "," INT ")" Escopo
+              | _ENQUANTO "(" Expressao ")" _FACA Escopo
+              | _REPITA Escopo _ATE _QUE "(" Expressao ")"
 
 DeclFuncao    : Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"
               | Tipo ID "(" ")" "{" _RETORNA Expressao "}"

@@ -47,6 +47,19 @@ def p_acao_Ciclo(p):
     p[0] = p[1]
 
 
+def p_escopo(p):
+    '''Escopo : "{" entrar Programa "}"'''
+    removed_scope = parser.decls.pop()
+    parser.sp -= len(removed_scope)
+    print(f'pop {len(removed_scope)}')
+    p[0] = p[2]
+
+
+def p_entrar(p):
+    '''entrar :'''
+    parser.decls.append({})
+
+
 def p_decl_variavel(p):
     '''DeclVariavel : Tipo LDeclVariaveis'''
     p[0] = p[1]
@@ -105,12 +118,15 @@ def p_l_variaveis_lista(p):
 def p_atribuicao(p):
     '''Atribuicao : ID "=" Expressao'''
     p[0] = (p[1], p[3])
-    if p[1] not in parser.decls:
-        print("Variavel não declarada!")
-        parser.exito = False
-        return
 
-    print(f"storeg {parser.decls[p[1]]}")
+    for scope in reversed(parser.decls):
+        if p[1] in scope:
+            print(f"storeg {scope[p[1]]}")
+            return
+
+    print(f"Variável {p[1]} não declarada em nenhum escopo!")
+    parser.exito = False
+    return
 
 
 def p_decl_atri_variavel_id(p):
@@ -118,13 +134,14 @@ def p_decl_atri_variavel_id(p):
 
     p[0] = ('var', p[1], ('const', 0))
 
-    if p[1] in parser.decls:
-        print("Variavel já declarada!")
-        parser.exito = False
-        return
+    for scope in reversed(parser.decls):
+        if p[1] in scope:
+            print("Variavel já declarada!")
+            parser.exito = False
+            return
 
     print("pushi 0")
-    parser.decls[p[1]] = parser.sp
+    parser.decls[-1][p[1]] = parser.sp
     parser.sp += 1
 
 
@@ -138,7 +155,7 @@ def p_decl_atri_variavel(p):
         parser.exito = False
         return
 
-    parser.decls[p[1]] = parser.sp
+    parser.decls[-1][p[1]] = parser.sp
     parser.sp += 1
 
 
@@ -150,13 +167,15 @@ def p_funcao(p):
 def p_expressao_id(p):
     '''Expressao : ID'''
 
-    if p[1] not in parser.decls:
-        print(f"Variável {p[1]} não declarada!")
-        parser.exito = False
-        return
+    for scope in reversed(parser.decls):
+        if p[1] in scope:
+            p[0] = ('id', p[1])
+            print(f"pushg {scope[p[1]]}")
+            return
 
-    p[0] = ('id', p[1])
-    print(f"pushg {parser.decls[p[1]]}")
+    print(f"Variável {p[1]} não declarada em nenhum escopo!")
+    parser.exito = False
+    return
 
 
 def p_expressao_const(p):
@@ -329,7 +348,17 @@ def p_l_tipo_constante_lista(p):
 
 
 def p_condicao_se(p):
-    '''Condicao : Se "(" Expressao ")" Entao "{" Programa "}"'''
+    '''Condicao : Se "(" Expressao ")" Entao Escopo'''
+    print(f"{parser.label_stack.pop()}:")
+
+
+def p_condicao_se_senao(p):
+    '''Condicao : Se "(" Expressao ")" Entao Escopo Senao Escopo'''
+    print(f"{parser.label_stack.pop()}:")
+
+
+def p_condicao_se_senao_se(p):
+    '''Condicao : Se "(" Expressao ")" Entao Escopo Senao Condicao'''
     print(f"{parser.label_stack.pop()}:")
 
 
@@ -344,16 +373,6 @@ def p_entao(p):
     print(f"jz {parser.label_stack[-1]}")
 
 
-def p_condicao_se_senao(p):
-    '''Condicao : Se "(" Expressao ")" Entao "{" Programa "}" Senao "{" Programa "}"'''
-    print(f"{parser.label_stack.pop()}:")
-
-
-def p_condicao_se_senao_se(p):
-    '''Condicao : Se "(" Expressao ")" Entao "{" Programa "}" Senao Condicao'''
-    print(f"{parser.label_stack.pop()}:")
-
-
 def p_senao(p):
     '''Senao : _SENAO'''
     a = parser.label_stack.pop()
@@ -364,12 +383,12 @@ def p_senao(p):
 
 
 def p_ciclo_para(p):
-    '''Ciclo : _PARA ID _NO _INTERVALO "(" INT "," INT ")" "{" Programa "}"'''
+    '''Ciclo : _PARA ID _NO _INTERVALO "(" INT "," INT ")" Escopo'''
     pass
 
 
 def p_ciclo_enquanto(p):
-    '''Ciclo : Enquanto "(" Expressao ")" Faca "{" Programa "}"'''
+    '''Ciclo : Enquanto "(" Expressao ")" Faca Escopo'''
     a = parser.label_stack.pop()
     b = parser.label_stack.pop()
     print(f'jump {b}')
@@ -391,7 +410,7 @@ def p_ciclo_enquanto_faca(p):
 
 
 def p_ciclo_repita(p):
-    '''Ciclo : Repita "{" Programa "}" _ATE _QUE "(" Expressao ")"'''
+    '''Ciclo : Repita Escopo _ATE _QUE "(" Expressao ")"'''
 
     print(f"jz {parser.label_stack.pop()}")
 
@@ -420,7 +439,7 @@ def p_error(p):
 
 def init_parser():
     parser.exito = True
-    parser.decls = {}
+    parser.decls = [{}]
     parser.sp = 0
     parser.label = 0
     parser.label_stack = []
