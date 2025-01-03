@@ -115,11 +115,14 @@ def p_atribuicao(p):
 
 def p_decl_atri_variavel_id(p):
     '''DeclAtriVariavel : ID'''
+
     p[0] = ('var', p[1], ('const', 0))
+
     if p[1] in parser.decls:
         print("Variavel já declarada!")
         parser.exito = False
         return
+    
     print("pushi 0")
     parser.decls[p[1]] = parser.sp
     parser.sp += 1
@@ -127,11 +130,14 @@ def p_decl_atri_variavel_id(p):
 
 def p_decl_atri_variavel(p):
     '''DeclAtriVariavel : ID "=" Expressao'''
+
     p[0] = ('var', p[1], p[3])
+
     if p[1] in parser.decls:
         print("Variavel já declarada!")
         parser.exito = False
         return
+    
     parser.decls[p[1]] = parser.sp
     parser.sp += 1
 
@@ -143,6 +149,7 @@ def p_funcao(p):
 
 def p_expressao_id(p):
     '''Expressao : ID'''
+
     if p[1] not in parser.decls:
         print(f"Variável {p[1]} não declarada!")
         parser.exito = False
@@ -323,23 +330,24 @@ def p_l_tipo_constante_lista(p):
 
 def p_condicao_se(p):
     '''Condicao : Se "(" Expressao ")" Entao "{" Programa "}"'''
-    print(f"{parser.label}:")
-    parser.label += 1
+    print(f"{parser.label_stack.pop()}:")
 
 
 def p_se(p):
     '''Se : _SE'''
     parser.label_stack.append(parser.label)
+    parser.label_stack2.append(parser.label)
+    parser.label += 1
 
 
 def p_entao(p):
     '''Entao : _ENTAO'''
-    print(f"jz {parser.label_stack.pop()}")
+    print(f"jz {parser.label_stack2.pop()}")
 
 
 def p_condicao_se_senao(p):
     '''Condicao : Se "(" Expressao ")" Entao "{" Programa "}" _SENAO "{" Programa "}"'''
-    pass
+    print(parser.label_stack.pop())
 
 
 def p_condicao_se_senao_se(p):
@@ -353,13 +361,36 @@ def p_ciclo_para(p):
 
 
 def p_ciclo_enquanto(p):
-    '''Ciclo : _ENQUANTO "(" Expressao ")" _FACA "{" Programa "}"'''
-    pass
+    '''Ciclo : ENQUANTO "(" Expressao ")" FACA "{" Programa "}"'''
+    a = parser.label_stack.pop()
+    b = parser.label_stack.pop()
+    print(f'jump {b}')
+    print(f'{a}:')
+
+
+def p_ciclo_enquantoTransicao(p):
+    '''ENQUANTO : _ENQUANTO'''
+    print(f"{parser.label}:")
+    parser.label_stack.append(parser.label)
+    parser.label += 1
+
+def p_ciclo_enquanto_faca(p):
+    '''FACA : _FACA'''
+    print(f'jz {parser.label}')
+    parser.label_stack.append(parser.label)
+    parser.label += 1
 
 
 def p_ciclo_repita(p):
-    '''Ciclo : _REPITA "{" Programa "}" _ATE _QUE "(" Expressao ")"'''
-    pass
+    '''Ciclo : REPITA "{" Programa "}" _ATE _QUE "(" Expressao ")"'''
+    
+    print(f"jz {parser.label_stack.pop()}")
+def p_ciclo_repitaTRANS(p):
+    '''REPITA : _REPITA'''
+
+    print(f"{parser.label}:")
+    parser.label_stack.append(parser.label)
+    parser.label += 1
 
 
 def p_decl_funcao(p):
@@ -382,7 +413,8 @@ def init_parser():
     parser.sp = 0
     parser.label = 0
     parser.label_stack = []
-
+    parser.label_stack2 = []
+    parser.label_stackfinal = []
 
 if __name__ == '__main__':
     parser = yacc.yacc(debug=True, write_tables=True)
