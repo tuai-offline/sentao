@@ -3,6 +3,7 @@ Programa      : Acao
 
 Acao          : DeclVariavel
               | DeclFuncao
+              | Funcao 
               | Atribuicao
               | Condicao
               | Ciclo
@@ -14,6 +15,7 @@ entrar        :
 DeclVariavel  : Tipo LDeclVariaveis
 
 Tipo          : INTEIRO
+              | REAL 
               | AUTO
               | DYNAMIC
               | CARACTER
@@ -29,6 +31,12 @@ DeclAtriVariavel: ID
 Atribuicao    : ID = Expressao
 
 Funcao        : ID "(" ")"
+              | _ESCREVE "(" ARG ")"
+              | _ESCREVER  "(" ARG ")"
+              | _ESCREVER "(" ARG ")"
+              | _LER "(" ")"
+              | _LERI "(" ")"
+              | _LERR "(" ")"
 
 Expressao     : ID
               | TipoConstante

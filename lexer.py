@@ -23,6 +23,13 @@ reserved = {
     'retorna': '_RETORNA',
     'se': '_SE',
     'senao': '_SENAO',
+    'escreve' : '_ESCREVE',
+    'escrevei': '_ESCREVEI',
+    'escrever': '_ESCREVER',
+    'ler': '_LER',
+    'leri': '_LERI',
+    'lerr': '_LERR'
+
 }
 
 tokens = [

@@ -22,6 +22,9 @@ def p_programa_acao_programa(p):
     p[0] = p[1]
 
 
+def p_acao_funcao(p):
+    '''Acao : Funcao'''
+
 def p_acao_DeclVariavel(p):
     '''Acao : DeclVariavel'''
     p[0] = p[1]
@@ -158,11 +161,61 @@ def p_decl_atri_variavel(p):
     parser.decls[-1][p[1]] = parser.sp
     parser.sp += 1
 
-
 def p_funcao(p):
     '''Funcao : ID "(" ")"'''
     pass
 
+
+def p_funcao_escreve(p):
+    '''Funcao : _ESCREVE "(" ARG ")"'''
+    print("writes")
+
+def p_funcao_escrevei(p):
+    '''Funcao : _ESCREVEI "(" ARG ")"'''
+    print("writei")
+
+
+def p_funcao_escrever(p):
+    '''Funcao : _ESCREVER "(" ARG ")"'''
+    print("writer")
+
+def p_funcao_ler(p):
+    '''Funcao : _LER "(" ")"'''
+    print("read")
+
+def p_funcao_leri(p):
+    '''Funcao : _LERI "(" ")"'''
+    print('read')
+    print('atoi')
+
+def p_funcao_lerr(p):
+    '''Funcao : _LERR  "(" ")"'''
+    print('read')
+    print('ator')
+
+
+def p_funcao_ARG(p):
+    '''ARG : ID'''
+    for scope in reversed(parser.decls):
+        if p[1] in scope:
+            print(f"pushg {scope[p[1]]}")
+            return
+
+    print(f"Variável {p[1]} não declarada em nenhum escopo!")
+    parser.exito = False
+    return
+    
+def p_funcao_ARG_INT(p):
+    '''ARG : INT'''
+    print("pushi", p[1])
+
+def p_funcao_ARG_REAL(p):
+    '''ARG : REAL'''
+    print("pushf", p[1])
+
+def p_funcao_ARG_CARS(p):
+    '''ARG : CARS'''
+    print("pushs", p[1])
 
 def p_expressao_id(p):
     '''Expressao : ID'''
@@ -283,7 +336,7 @@ def p_expressao_bin_e(p):
     '''Expressao : Expressao E Expressao'''
 
     p[0] = (p[2], p[1], p[3])
-    print('e')
+    print('and')
     pass
 
 
@@ -291,7 +344,7 @@ def p_expressao_bin_ou(p):
     '''Expressao : Expressao OU Expressao'''
 
     p[0] = (p[2], p[1], p[3])
-    print('ou')
+    print('or')
     pass
 
 
