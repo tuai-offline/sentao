@@ -53,14 +53,16 @@ def p_acao_Ciclo(p):
 def p_escopo(p):
     '''Escopo : "{" entrar Programa "}"'''
     removed_scope = parser.decls.pop()
-    parser.sp -= len(removed_scope)
-    print(f'pop {len(removed_scope)}')
+    last_sp = parser.scope_stack.pop()
+    print(f'pop {parser.sp - last_sp}')
+    parser.sp = last_sp
     p[0] = p[2]
 
 
 def p_entrar(p):
     '''entrar :'''
     parser.decls.append({})
+    parser.scope_stack.append(parser.sp)
 
 
 def p_decl_variavel(p):
@@ -151,15 +153,14 @@ def p_decl_atri_variavel_id(p):
 def p_decl_atri_variavel(p):
     '''DeclAtriVariavel : ID "=" Expressao'''
 
-    p[0] = ('var', p[1], p[3])
-
     if p[1] in parser.decls:
         print("Variavel já declarada!")
         parser.exito = False
         return
 
-    parser.decls[-1][p[1]] = parser.sp
-    parser.sp += 1
+    parser.decls[-1][p[1]] = (parser.sp, p[3][1])
+    parser.sp += p[3][1]
+    p[0] = p[3]
 
 def p_funcao(p):
     '''Funcao : ID "(" ")"'''
@@ -223,7 +224,7 @@ def p_expressao_id(p):
     for scope in reversed(parser.decls):
         if p[1] in scope:
             p[0] = ('id', p[1])
-            print(f"pushg {scope[p[1]]}")
+            print(f"pushg {scope[p[1]][0]}")
             return
 
     print(f"Variável {p[1]} não declarada em nenhum escopo!")
@@ -233,9 +234,7 @@ def p_expressao_id(p):
 
 def p_expressao_const(p):
     '''Expressao : TipoConstante'''
-
-    p[0] = ('const', *p[1])
-    print(f"pushi {p[1][1]}")
+    p[0] = p[1]
 
 
 def p_expressao_funcao(p):
@@ -304,7 +303,7 @@ def p_expressao_bin_menorig(p):
     '''Expressao : Expressao MENORIG Expressao'''
 
     p[0] = (p[2], p[1], p[3])
-    print('infq')
+    print('infeq')
     pass
 
 
@@ -312,7 +311,7 @@ def p_expressao_bin_maiorig(p):
     '''Expressao : Expressao MAIORIG Expressao'''
 
     p[0] = (p[2], p[1], p[3])
-    print('sup')
+    print('supeq')
     pass
 
 
@@ -367,37 +366,39 @@ def p_expressao_grupo(p):
 
 def p_tipo_constante_INT(p):
     '''TipoConstante : INT'''
-    p[0] = ('INT', int(p[1]))
+    p[0] = ('INT', 1)
+    print(f"pushi {p[1]}")
 
 
 def p_tipo_REAL(p):
     '''TipoConstante : REAL'''
-    p[0] = ('REAL', float(p[1]))
+    p[0] = ('REAL', 1)
+    print(f"pushf {p[1]}")
 
 
 def p_tipo_CAR(p):
     '''TipoConstante : CAR'''
-    p[0] = ('CAR', p[1])
+    p[0] = ('CAR', 1)
 
 
 def p_tipo_CARS(p):
     '''TipoConstante : CARS'''
-    p[0] = ('CARS', p[1])
+    p[0] = ('CARS', 1)
 
 
 def p_tipo_constante_array(p):
     '''TipoConstante : "[" LTipoConstante "]"'''
-    pass
+    p[0] = (p[2][0], len(p[2]))
 
 
 def p_l_tipo_constante(p):
     '''LTipoConstante : TipoConstante'''
-    pass
+    p[0] = [p[1]]
 
 
 def p_l_tipo_constante_lista(p):
     '''LTipoConstante : TipoConstante "," LTipoConstante'''
-    pass
+    p[0] = [p[1]] + p[3]
 
 
 def p_condicao_se(p):
@@ -494,6 +495,7 @@ def init_parser():
     parser.exito = True
     parser.decls = [{}]
     parser.sp = 0
+    parser.scope_stack = []
     parser.label = 0
     parser.label_stack = []
 
