@@ -67,18 +67,27 @@ def p_escopo(p):
     p[0] = p[2]
 
 
+def inicio_escopo():
+    parser.decls.append({})
+    parser.escopo_stack.append(parser.sp)
+
+
+def fim_escopo():
+    removed_escopo = parser.decls.pop()
+    last_sp = parser.escopo_stack.pop()
+    if parser.sp - last_sp > 0:
+        writevm(f'pop {parser.sp - last_sp}')
+    parser.sp = last_sp
+
+
 def p_inicio_escopo(p):
     '''inicio_escopo :'''
-    parser.decls.append({})
-    parser.scope_stack.append(parser.sp)
+    inicio_escopo()
 
 
 def p_fim_escopo(p):
     '''fim_escopo :'''
-    removed_scope = parser.decls.pop()
-    last_sp = parser.scope_stack.pop()
-    writevm(f'pop {parser.sp - last_sp}')
-    parser.sp = last_sp
+    fim_escopo()
 
 
 def p_decl_variavel(p):
@@ -140,9 +149,9 @@ def p_atribuicao(p):
     '''Atribuicao : ID "=" Expressao'''
     p[0] = (p[1], p[3])
 
-    for scope in reversed(parser.decls):
-        if p[1] in scope:
-            writevm(f"storeg {scope[p[1]][0]}")
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
+            writevm(f"storeg {escopo[p[1]][0]}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -150,33 +159,38 @@ def p_atribuicao(p):
     return
 
 
+def stack_alloc(name, size):
+    parser.decls[-1][name] = (parser.sp, size)
+    ret = parser.sp
+    parser.sp += size
+    return ret
+
+
 def p_decl_atri_variavel_id(p):
     '''DeclAtriVariavel : ID'''
 
     p[0] = ('var', p[1], ('const', 0))
 
-    for scope in reversed(parser.decls):
-        if p[1] in scope:
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
             print_err(f"Variavel '{p[1]}' já declarada!")
             parser.exito = False
             return
 
     writevm("pushi 0")
-    parser.decls[-1][p[1]] = parser.sp
-    parser.sp += 1
+    stack_alloc(p[1], 1)
 
 
 def p_decl_atri_variavel(p):
     '''DeclAtriVariavel : ID "=" Expressao'''
 
-    for scope in reversed(parser.decls):
+    for escopo in reversed(parser.decls):
         if p[1] in parser.decls:
             print_err(f"Variavel '{p[1]}' já declarada!")
             parser.exito = False
             return
 
-    parser.decls[-1][p[1]] = (parser.sp, p[3][1])
-    parser.sp += p[3][1]
+    stack_alloc(p[1], p[3][1])
     p[0] = p[3]
 
 
@@ -189,16 +203,16 @@ def p_funcao(p):
 def p_indexacao(p):
     '''Indexacao : ID "[" INT "]"'''
 
-    for scope in reversed(parser.decls):
-        if p[1] in scope:
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
             p[0] = ('INT', 1)
-            if int(p[3]) < -scope[p[1]][1] or int(p[3]) >= scope[p[1]][1]:
+            if int(p[3]) < -escopo[p[1]][1] or int(p[3]) >= escopo[p[1]][1]:
                 print_err(f"Acesso em array '{p[1]}' fora dos limites!")
                 break
             if (int(p[3]) >= 0):
-                idx = scope[p[1]][0] + int(p[3])
+                idx = escopo[p[1]][0] + int(p[3])
             else:
-                idx = scope[p[1]][0] + scope[p[1]][1] + int(p[3])
+                idx = escopo[p[1]][0] + escopo[p[1]][1] + int(p[3])
             writevm(f"pushg {idx}")
             return
     else:
@@ -242,9 +256,9 @@ def p_funcao_lerr(p):
 
 def p_funcao_ARG(p):
     '''ARG : ID'''
-    for scope in reversed(parser.decls):
-        if p[1] in scope:
-            writevm(f"pushg {scope[p[1]][0]}")
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
+            writevm(f"pushg {escopo[p[1]][0]}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -270,10 +284,10 @@ def p_funcao_ARG_CARS(p):
 def p_expressao_id(p):
     '''Expressao : ID'''
 
-    for scope in reversed(parser.decls):
-        if p[1] in scope:
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
             p[0] = ('id', p[1])
-            writevm(f"pushg {scope[p[1]][0]}")
+            writevm(f"pushg {escopo[p[1]][0]}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -490,8 +504,43 @@ def p_senao(p):
 
 
 def p_ciclo_para(p):
-    '''Ciclo : _PARA ID _NO _INTERVALO "(" INT "," INT ")" Escopo'''
-    pass
+    '''Ciclo : _PARA Intervalo "{" Programa "}"'''
+    writevm(f'pushg {p[2]}')
+    writevm('pushi 1')
+    writevm('add')
+    writevm(f'storeg {p[2]}')
+    labelf = parser.label_stack.pop()
+    labeli = parser.label_stack.pop()
+    fim_escopo()
+    writevm(f'jump {labeli}')
+    writevm(f'{labelf}:')
+
+
+def p_intervalo(p):
+    '''Intervalo : ID _NO _INTERVALO "(" INT "," INT ")"'''
+    inicio, fim = p[5], p[7]
+
+    inicio_escopo()
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
+            i_sp = escopo[p[1]][0]
+            break
+    else:
+        i_sp = stack_alloc(p[1], p[3][1])
+
+    writevm(f'pushi {inicio}')
+    writevm(f'storeg {i_sp}')
+    writevm(f'{parser.label}:')
+    parser.label_stack.append(parser.label)
+    parser.label += 1
+    writevm(f'pushg {i_sp}')
+    writevm(f'pushi {fim}')
+    writevm(f'inf')
+    writevm(f'jz {parser.label}')
+    parser.label_stack.append(parser.label)
+    parser.label += 1
+
+    p[0] = i_sp
 
 
 def p_ciclo_enquanto(p):
@@ -549,7 +598,7 @@ def init_parser():
     parser.decls = [{}]
     parser.fun_decls = []
     parser.sp = 0
-    parser.scope_stack = []
+    parser.escopo_stack = []
     parser.label = 0
     parser.label_stack = []
 
