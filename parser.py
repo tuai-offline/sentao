@@ -13,8 +13,7 @@ precedence = (
 
 
 def p_programa_acao(p):
-    '''Programa : Acao'''
-    p[0] = p[1]
+    '''Programa :'''
 
 
 def p_programa_acao_programa(p):
@@ -32,8 +31,9 @@ def p_acao_DeclVariavel(p):
 
 
 def p_acao_DeclFuncao(p):
-    '''Acao :  DeclFuncao'''
+    '''Acao : DeclFuncao'''
     p[0] = p[1]
+    print('return')
 
 
 def p_acao_Atribuicao(p):
@@ -52,18 +52,22 @@ def p_acao_Ciclo(p):
 
 
 def p_escopo(p):
-    '''Escopo : "{" entrar Programa "}"'''
+    '''Escopo : "{" inicio_escopo Programa fim_escopo "}"'''
+    p[0] = p[2]
+
+
+def p_inicio_escopo(p):
+    '''inicio_escopo :'''
+    parser.decls.append({})
+    parser.scope_stack.append(parser.sp)
+
+
+def p_fim_escopo(p):
+    '''fim_escopo :'''
     removed_scope = parser.decls.pop()
     last_sp = parser.scope_stack.pop()
     print(f'pop {parser.sp - last_sp}')
     parser.sp = last_sp
-    p[0] = p[2]
-
-
-def p_entrar(p):
-    '''entrar :'''
-    parser.decls.append({})
-    parser.scope_stack.append(parser.sp)
 
 
 def p_decl_variavel(p):
@@ -166,7 +170,8 @@ def p_decl_atri_variavel(p):
 
 def p_funcao(p):
     '''Funcao : ID "(" ")"'''
-    pass
+    print(f'pusha {p[1]}')
+    print('call')
 
 
 def p_indexacao(p):
@@ -271,7 +276,7 @@ def p_expressao_const(p):
 
 def p_expressao_funcao(p):
     '''Expressao : Funcao'''
-    p[0] = ('fun', p[1])
+    p[0] = ('INT', 1)
 
 
 def p_expressao_indexacao(p):
@@ -514,13 +519,15 @@ def p_ciclo_repitaTRANS(p):
 
 
 def p_decl_funcao(p):
-    '''DeclFuncao : Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"'''
+    '''DeclFuncao : Tipo IdFuncao "(" ")" "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"'''
     pass
 
 
-def p_decl_funcao_simples(p):
-    '''DeclFuncao : Tipo ID "(" ")" "{" _RETORNA Expressao "}"'''
-    pass
+def p_decl_id_funcao(p):
+    '''IdFuncao : ID'''
+    parser.fun_decls.append(p[1])
+    print(f'{p[1]}:')
+    print(f'start')
 
 
 def p_error(p):
@@ -530,10 +537,20 @@ def p_error(p):
 def init_parser():
     parser.exito = True
     parser.decls = [{}]
+    parser.fun_decls = []
     parser.sp = 0
     parser.scope_stack = []
     parser.label = 0
     parser.label_stack = []
+
+
+def preludio():
+    print("jump inicio")
+
+
+def epilogo():
+    if 'inicio' not in parser.fun_decls:
+        print("Função 'inicio' não declarada!")
 
 
 if __name__ == '__main__':
@@ -542,7 +559,9 @@ if __name__ == '__main__':
 
     if (len(sys.argv) > 1):
         f = open(sys.argv[1])
+        preludio()
         parser.parse(f.read(), tracking=True)
+        epilogo()
         f.close()
         if parser.exito:
             print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
@@ -564,7 +583,9 @@ if __name__ == '__main__':
             break
 
         source = '\n'.join(lines)
+        preludio()
         parser.parse(source, tracking=True)
+        epilogo()
         if parser.exito:
             print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
             print("Declarações:")

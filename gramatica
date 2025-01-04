@@ -1,4 +1,4 @@
-Programa      : Acao
+Programa      :
               | Acao Programa
 
 Acao          : DeclVariavel
@@ -8,9 +8,11 @@ Acao          : DeclVariavel
               | Condicao
               | Ciclo
 
-Escopo        : '{' entrar Programa '}'
+Escopo        : '{' inicio_escopo Programa fim_escopo '}'
 
-entrar        :
+inicio_escopo :
+
+fim_escopo    :
 
 DeclVariavel  : Tipo LDeclVariaveis
 
@@ -83,5 +85,6 @@ Ciclo         : _PARA ID _NO _INTERVALO "(" INT "," INT ")" Escopo
               | _ENQUANTO "(" Expressao ")" _FACA Escopo
               | _REPITA Escopo _ATE _QUE "(" Expressao ")"
 
-DeclFuncao    : Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"
-              | Tipo ID "(" ")" "{" _RETORNA Expressao "}"
+DeclFuncao    : Tipo IdFuncao "(" ")" "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"
+
+IdFuncao      : ID
