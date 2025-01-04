@@ -6,7 +6,8 @@ import argparse
 import io
 
 precedence = (
-    ('left', 'E', 'OU'),  # Operadores lógicos
+    ('left', 'OU'),  # Operadores lógicos
+    ('left', 'E'),  # Operadores lógicos
     ('left', 'IG', 'DIF'),  # Comparadores
     ('left', 'MENORQ', 'MAIORQ', 'MENORIG', 'MAIORIG'),
     ('left', 'SOMA', 'SUBT'),  # Soma e subtração
@@ -268,17 +269,17 @@ def p_funcao_ARG(p):
 
 def p_funcao_ARG_INT(p):
     '''ARG : INT'''
-    writevm("pushi", p[1])
+    writevm(f"pushi {p[1]}")
 
 
 def p_funcao_ARG_REAL(p):
     '''ARG : REAL'''
-    writevm("pushf", p[1])
+    writevm(f"pushf {p[1]}")
 
 
 def p_funcao_ARG_CARS(p):
     '''ARG : CARS'''
-    writevm("pushs", p[1])
+    writevm(f"pushs {p[1]}")
 
 
 def p_expressao_id(p):
@@ -313,7 +314,7 @@ def p_expressao_indexacao(p):
 def p_expressao_bin_soma(p):
     '''Expressao : Expressao SOMA Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('add')
     pass
 
@@ -321,7 +322,7 @@ def p_expressao_bin_soma(p):
 def p_expressao_bin_subt(p):
     '''Expressao : Expressao SUBT Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('sub')
     pass
 
@@ -329,7 +330,7 @@ def p_expressao_bin_subt(p):
 def p_expressao_bin_mult(p):
     '''Expressao : Expressao MULT Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('mul')
     pass
 
@@ -337,7 +338,7 @@ def p_expressao_bin_mult(p):
 def p_expressao_bin_div(p):
     '''Expressao : Expressao DIV Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('div')
     pass
 
@@ -345,7 +346,7 @@ def p_expressao_bin_div(p):
 def p_expressao_bin_mod(p):
     '''Expressao : Expressao MOD Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('mod')
     pass
 
@@ -353,7 +354,7 @@ def p_expressao_bin_mod(p):
 def p_expressao_bin_menorq(p):
     '''Expressao : Expressao MENORQ Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('inf')
     pass
 
@@ -361,7 +362,7 @@ def p_expressao_bin_menorq(p):
 def p_expressao_bin_maiorq(p):
     '''Expressao : Expressao MAIORQ Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('sup')
     pass
 
@@ -369,7 +370,7 @@ def p_expressao_bin_maiorq(p):
 def p_expressao_bin_menorig(p):
     '''Expressao : Expressao MENORIG Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('infeq')
     pass
 
@@ -377,7 +378,7 @@ def p_expressao_bin_menorig(p):
 def p_expressao_bin_maiorig(p):
     '''Expressao : Expressao MAIORIG Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('supeq')
     pass
 
@@ -385,7 +386,7 @@ def p_expressao_bin_maiorig(p):
 def p_expressao_bin_ig(p):
     '''Expressao : Expressao IG Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('equal')
     pass
 
@@ -393,7 +394,7 @@ def p_expressao_bin_ig(p):
 def p_expressao_bin_dif(p):
     '''Expressao : Expressao DIF Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('dif')
     pass
 
@@ -401,7 +402,7 @@ def p_expressao_bin_dif(p):
 def p_expressao_bin_e(p):
     '''Expressao : Expressao E Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('and')
     pass
 
@@ -409,21 +410,20 @@ def p_expressao_bin_e(p):
 def p_expressao_bin_ou(p):
     '''Expressao : Expressao OU Expressao'''
 
-    p[0] = (p[2], p[1], p[3])
+    p[0] = (1, 1)
     writevm('or')
     pass
 
 
 def p_expressao_un_subt(p):
     '''Expressao : SUBT Expressao %prec SUBTU'''
-    p[0] = ('neg', p[2])
     writevm('pushi -1')
     writevm('mul')
 
 
 def p_expressao_un_neg(p):
     '''Expressao : NEG Expressao %prec NEG'''
-    pass
+    writevm('not')
 
 
 def p_expressao_grupo(p):
@@ -520,13 +520,14 @@ def p_intervalo(p):
     '''Intervalo : ID _NO _INTERVALO "(" INT "," INT ")"'''
     inicio, fim = p[5], p[7]
 
-    inicio_escopo()
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             i_sp = escopo[p[1]][0]
             break
     else:
-        i_sp = stack_alloc(p[1], p[3][1])
+        i_sp = stack_alloc(p[1], 1)
+
+    inicio_escopo()
 
     writevm(f'pushi {inicio}')
     writevm(f'storeg {i_sp}')
