@@ -227,7 +227,7 @@ def p_funcao_ARG(p):
     '''ARG : ID'''
     for scope in reversed(parser.decls):
         if p[1] in scope:
-            print(f"pushg {scope[p[1]]}")
+            print(f"pushg {scope[p[1]][0]}")
             return
 
     print(f"Variável {p[1]} não declarada em nenhum escopo!")
