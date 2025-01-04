@@ -12,6 +12,21 @@ precedence = (
 )
 
 
+def p_estrutura(p):
+    '''Estrutura : Global'''
+
+def p_estrutura_global_principal(p):
+    '''Estrutura : Global DeclFuncoes Principal '''
+
+def p_estrutura_principal(p):
+    '''Estrutua : DeclFuncoes Principal'''
+
+def p_declFuncoes_unica(p):
+    '''DeclFuncoes : DecFuncao '''
+
+def p_declFuncoes(p):
+    '''DeclFuncoes : DeclFuncoes DecFuncao'''
+
 def p_programa_acao(p):
     '''Programa : Acao'''
     p[0] = p[1]

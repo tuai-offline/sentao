@@ -1,9 +1,20 @@
+Estrutura     : Global
+              | Global DeclFuncoes Principal
+              | DeclFuncoes Principal
+
+Global : Programa
+
+DeclFuncoes   : DeclFuncao
+              | DeclFuncao DeclFuncoes
+
+
+Principal     : _PRINCIPAL Programa
+
 Programa      : Acao
               | Acao Programa
 
 Acao          : DeclVariavel
-              | DeclFuncao
-              | Funcao 
+              | ChamarFuncao 
               | Atribuicao
               | Condicao
               | Ciclo
@@ -30,7 +41,7 @@ DeclAtriVariavel: ID
 
 Atribuicao    : ID = Expressao
 
-Funcao        : ID "(" ")"
+ChamarFuncao        : ID "(" ")"
               | _ESCREVE "(" ARG ")"
               | _ESCREVER  "(" ARG ")"
               | _ESCREVER "(" ARG ")"
