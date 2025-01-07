@@ -7,7 +7,6 @@ reserved = {
     'ate': '_ATE',
     'auto': '_AUTO',
     'bool': '_BOOL',
-    'dynamic': '_DYNAMIC',
     'car': '_CAR',
     'cars': '_CARS',
     'enquanto': '_ENQUANTO',
@@ -67,7 +66,7 @@ def t_ID(t):
 
 
 def t_REAL(t):
-    r'\d+\.\d+'
+    r'-?\d+\.\d+'
     return t
 
 
@@ -78,6 +77,7 @@ def t_INT(t):
 
 def t_CAR(t):
     r"\'[^\']\'"
+    t.value = t.value[1]
     return t
 
 
