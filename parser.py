@@ -282,6 +282,7 @@ def p_funcao(p):
     '''Funcao : ID "(" ")"'''
     writevm(f'pusha {p[1]}')
     writevm('call')
+    p[0] = p[1]
 
 
 def p_indexacao(p):
@@ -382,7 +383,12 @@ def p_expressao_const(p):
 
 def p_expressao_funcao(p):
     '''Expressao : Funcao'''
-    p[0] = TipoAST(Tipo.INT)
+    if p[1] not in parser.fun_decls:
+        print_err(f"Função '{p[1]}' não declarada!")
+        p[0] = None
+        return
+
+    p[0] = parser.fun_decls[p[1]]
 
 
 def p_expressao_indexacao(p):
@@ -697,14 +703,25 @@ def p_ciclo_repitaTRANS(p):
 
 def p_decl_funcao(p):
     '''DeclFuncao : Tipo IdFuncao "(" ")" "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"'''
-    pass
+    esq, dir = p[1], p[9]
+    if esq.tipo == Tipo.AUTO:
+        esq = dir
+    elif compativel(esq, dir) and compativel(esq, dir) != esq:
+        print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
+
+    p[0] = esq
+    if p[2] in parser.fun_decls:
+        print_err(f"Função '{p[2]}' já declarada!")
+        return
+
+    parser.fun_decls[p[2]] = esq
 
 
 def p_decl_id_funcao(p):
     '''IdFuncao : ID'''
-    parser.fun_decls.append(p[1])
     writevm(f'{p[1]}:')
     writevm(f'start')
+    p[0] = p[1]
 
 
 def find_column(token):
@@ -747,7 +764,7 @@ def p_error(p):
 def init_parser():
     parser.exito = True
     parser.decls = [{}]
-    parser.fun_decls = []
+    parser.fun_decls = {}
     parser.sp = 0
     parser.escopo_stack = []
     parser.label = 0
@@ -818,5 +835,7 @@ if __name__ == '__main__':
         epilogo()
         if not parser.exito: exit(1)
         print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
-        print("Declarações:")
+        print("Declarações Variáveis:")
         print(parser.decls)
+        print("Declarações Funções:")
+        print(parser.fun_decls)
