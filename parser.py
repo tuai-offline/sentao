@@ -101,6 +101,38 @@ def print_err(s):
     parser.exito = False
 
 
+def p_estrutura_vazia(p):
+    '''Estrutura : '''
+
+
+def p_estrutura(p):
+    '''Estrutura : Global'''
+
+
+def p_estrutura_inicio(p):
+    '''Estrutura : Global DeclFuncoes'''
+
+
+def p_estrutural_sem_global(p):
+    '''Estrutura : DeclFuncoes'''
+
+
+def p_global(p):
+    '''Global : Programa'''
+
+
+def p_declFuncoes_unica(p):
+    '''DeclFuncoes : Inicio'''
+
+
+def p_declFuncoes(p):
+    '''DeclFuncoes : DeclFuncao DeclFuncoes'''
+
+
+def p_inicio(p):
+    '''Inicio : AssinaturaFuncaoInicio CorpoFuncao'''
+
+
 def p_programa_acao(p):
     '''Programa : Acao'''
 
@@ -111,18 +143,13 @@ def p_programa_acao_programa(p):
 
 
 def p_acao_funcao(p):
-    '''Acao : Funcao'''
+    '''Acao : ChamarFuncao'''
+    p[0] = p[1]
 
 
 def p_acao_DeclVariavel(p):
     '''Acao : DeclVariavel'''
     p[0] = p[1]
-
-
-def p_acao_DeclFuncao(p):
-    '''Acao : DeclFuncao'''
-    p[0] = p[1]
-    writevm('return')
 
 
 def p_acao_Atribuicao(p):
@@ -283,7 +310,7 @@ def p_decl_atri_variavel(p):
 
 
 def p_funcao(p):
-    '''Funcao : ID "(" ")"'''
+    '''ChamarFuncao : ID "(" ")"'''
     writevm(f'pusha {p[1]}')
     writevm('call')
     p[0] = p[1]
@@ -336,33 +363,33 @@ def p_indices_rec(p):
 
 
 def p_funcao_escreve(p):
-    '''Funcao : _ESCREVE "(" Expressao ")"'''
+    '''ChamarFuncao : _ESCREVE "(" Expressao ")"'''
     writevm("writes")
 
 
 def p_funcao_escrevei(p):
-    '''Funcao : _ESCREVEI "(" Expressao ")"'''
+    '''ChamarFuncao : _ESCREVEI "(" Expressao ")"'''
     writevm("writei")
 
 
 def p_funcao_escrever(p):
-    '''Funcao : _ESCREVER "(" Expressao ")"'''
+    '''ChamarFuncao : _ESCREVER "(" Expressao ")"'''
     writevm("writer")
 
 
 def p_funcao_ler(p):
-    '''Funcao : _LER "(" ")"'''
+    '''ChamarFuncao : _LER "(" ")"'''
     writevm("read")
 
 
 def p_funcao_leri(p):
-    '''Funcao : _LERI "(" ")"'''
+    '''ChamarFuncao : _LERI "(" ")"'''
     writevm('read')
     writevm('atoi')
 
 
 def p_funcao_lerr(p):
-    '''Funcao : _LERR  "(" ")"'''
+    '''ChamarFuncao : _LERR  "(" ")"'''
     writevm('read')
     writevm('ator')
 
@@ -386,7 +413,7 @@ def p_expressao_const(p):
 
 
 def p_expressao_funcao(p):
-    '''Expressao : Funcao'''
+    '''Expressao : ChamarFuncao'''
     if p[1] not in parser.fun_decls:
         print_err(f"Função '{p[1]}' não declarada!")
         p[0] = None
@@ -721,7 +748,7 @@ def p_decl_funcao(p):
     elif compativel(esq, dir) and compativel(esq, dir) != esq:
         print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
 
-    if not esq.tipo.singular():
+    if not esq.singular():
         assert False, "Não implementado!"
 
     p[0] = esq
@@ -730,6 +757,7 @@ def p_decl_funcao(p):
         return
 
     parser.fun_decls[nome] = esq
+    writevm('return')
 
 
 def p_decl_corpo_funcao_simples(p):
@@ -743,11 +771,19 @@ def p_decl_corpo_funcao(p):
 
 
 def p_assinatura_funcao(p):
-    '''AssinaturaFuncao : Tipo ID "(" ")"'''
-    writevm(f'{p[2]}:')
-    inicializacao0(p[1])
+    '''AssinaturaFuncao : _DEF Tipo ID "(" ")"'''
+    writevm(f'{p[3]}:')
+    inicializacao0(p[2])
     writevm(f'start')
-    p[0] = (p[2], p[1])
+    p[0] = (p[3], p[2])
+
+
+def p_assinatura_funcao_inicio(p):
+    '''AssinaturaFuncaoInicio : _DEF _INT _INICIO "(" ")"'''
+    writevm(f'{p[3]}:')
+    inicializacao0(TipoAST(Tipo.INT))
+    writevm(f'start')
+    p[0] = (p[3], p[2])
 
 
 def p_decl_retorna(p):
@@ -814,11 +850,6 @@ def preludio():
     writevm("stop")
 
 
-def epilogo():
-    if 'inicio' not in parser.fun_decls:
-        print_err("Função 'inicio' não declarada!")
-
-
 if __name__ == '__main__':
     parser = yacc.yacc(debug=True, write_tables=True)
     init_parser()
@@ -839,7 +870,6 @@ if __name__ == '__main__':
         with open(args.input_file, 'r') as f:
             preludio()
             parser.parse(f.read(), tracking=True)
-            epilogo()
             if not parser.exito: exit(1)
             print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
 
@@ -871,7 +901,6 @@ if __name__ == '__main__':
         print("==== Instruções EWVM ====")
         preludio()
         parser.parse(source, tracking=True)
-        epilogo()
         if not parser.exito: exit(1)
         print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
         print("Declarações Variáveis:")
