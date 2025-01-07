@@ -102,7 +102,7 @@ def print_err(s):
 
 
 def p_programa_acao(p):
-    '''Programa :'''
+    '''Programa : Acao'''
 
 
 def p_programa_acao_programa(p):
@@ -168,6 +168,19 @@ def p_fim_escopo(p):
     fim_escopo()
 
 
+def inicializacao0(var):
+    if var.tipo == Tipo.AUTO:
+        print_err(f'Impossível inferir tipo de variável "{nome}"!')
+    elif var.int():
+        writevm("pushi 0")
+    elif var.real():
+        writevm("pushf 0")
+    elif var.cars():
+        writevm('pushs ""')
+    else:
+        assert False, "Inalcancavel!"
+
+
 def p_decl_variavel(p):
     '''DeclVariavel : Tipo LDeclVariaveis'''
     esq = p[1]
@@ -178,16 +191,7 @@ def p_decl_variavel(p):
             elif compativel(esq, dir) and compativel(esq, dir) != esq:
                 print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
         else:
-            if esq.tipo == Tipo.AUTO:
-                print_err(f'Impossível inferir tipo de variável "{nome}"!')
-            elif esq.int():
-                writevm("pushi 0")
-            elif esq.real():
-                writevm("pushf 0")
-            elif esq.cars():
-                writevm('pushs ""')
-            else:
-                assert False, "Inalcancavel!"
+            inicializacao0(esq)
 
         stack_alloc(nome, esq)
 
@@ -311,7 +315,7 @@ def p_indexacao(p):
                 multiplicador *= dimensao
 
             ptr = escopo[p[1]][0] + indice_linear
-            writevm(f"pushg {ptr}")
+            writevm(f"pushl {ptr}")
 
             p[0] = TipoAST(escopo[p[1]][1].tipo)
             return
@@ -369,7 +373,7 @@ def p_expressao_id(p):
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             ptr, p[0] = escopo[p[1]]
-            writevm(f"pushg {ptr}")
+            writevm(f"pushl {ptr}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -628,7 +632,7 @@ def p_senao(p):
 
 def p_ciclo_para(p):
     '''Ciclo : _PARA Intervalo "{" Programa "}"'''
-    writevm(f'pushg {p[2]}')
+    writevm(f'pushl {p[2]}')
     writevm('pushi 1')
     writevm('add')
     writevm(f'storeg {p[2]}')
@@ -645,19 +649,26 @@ def p_intervalo(p):
 
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
+            if not escopo[p[1]][1].int():
+                print_err(
+                    f"Variável {p[1]} já declarada com tipo diferente de 'INT'!"
+                )
             ptr = escopo[p[1]][0]
+            writevm(f'pushi {inicio}')
+            writevm(f'storeg {ptr}')
             break
     else:
-        ptr = stack_alloc(p[1], TipoAST(Tipo.INT))
+        tipo = TipoAST(Tipo.INT)
+        ptr = stack_alloc(p[1], tipo)
+        print(parser.decls)
+        writevm(f'pushi {inicio}')
 
     inicio_escopo()
 
-    writevm(f'pushi {inicio}')
-    writevm(f'storeg {ptr}')
     writevm(f'{parser.label}:')
     parser.label_stack.append(parser.label)
     parser.label += 1
-    writevm(f'pushg {ptr}')
+    writevm(f'pushl {ptr}')
     writevm(f'pushi {fim}')
     writevm(f'inf')
     writevm(f'jz {parser.label}')
@@ -702,26 +713,47 @@ def p_ciclo_repitaTRANS(p):
 
 
 def p_decl_funcao(p):
-    '''DeclFuncao : Tipo IdFuncao "(" ")" "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"'''
-    esq, dir = p[1], p[9]
+    '''DeclFuncao : AssinaturaFuncao CorpoFuncao'''
+    nome, esq = p[1]
+    dir = p[2]
     if esq.tipo == Tipo.AUTO:
         esq = dir
     elif compativel(esq, dir) and compativel(esq, dir) != esq:
         print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
 
+    if not esq.tipo.singular():
+        assert False, "Não implementado!"
+
     p[0] = esq
-    if p[2] in parser.fun_decls:
-        print_err(f"Função '{p[2]}' já declarada!")
+    if nome in parser.fun_decls:
+        print_err(f"Função '{nome}' já declarada!")
         return
 
-    parser.fun_decls[p[2]] = esq
+    parser.fun_decls[nome] = esq
 
 
-def p_decl_id_funcao(p):
-    '''IdFuncao : ID'''
-    writevm(f'{p[1]}:')
+def p_decl_corpo_funcao_simples(p):
+    '''CorpoFuncao : "{" inicio_escopo Retorno fim_escopo "}"'''
+    p[0] = p[3]
+
+
+def p_decl_corpo_funcao(p):
+    '''CorpoFuncao : "{" inicio_escopo Programa Retorno fim_escopo "}"'''
+    p[0] = p[4]
+
+
+def p_assinatura_funcao(p):
+    '''AssinaturaFuncao : Tipo ID "(" ")"'''
+    writevm(f'{p[2]}:')
+    inicializacao0(p[1])
     writevm(f'start')
-    p[0] = p[1]
+    p[0] = (p[2], p[1])
+
+
+def p_decl_retorna(p):
+    '''Retorno : _RETORNA Expressao'''
+    writevm(f"storel -1")
+    p[0] = p[2]
 
 
 def find_column(token):
@@ -772,7 +804,14 @@ def init_parser():
 
 
 def preludio():
-    writevm("jump inicio")
+    writevm("start")
+    writevm("pusha inicio")
+    writevm("call")
+    writevm("stri")
+    writevm('pushs "Programa terminou com resultado: "')
+    writevm("concat")
+    writevm('writes')
+    writevm("stop")
 
 
 def epilogo():

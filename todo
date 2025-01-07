@@ -21,5 +21,4 @@
         -Para x no intervalo (a,b) y ✅
         -Enquanto x faça y ✅
         -Repita y ate que x ✅
--Corrigir funções que retornam valores, alocar espaco antes de fp, para variavel de retorno
 -Corrigir ordem de concatenação de string "ola, " + "mundo" = "mundoola, "
