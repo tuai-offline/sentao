@@ -1,14 +1,15 @@
 Estrutura     : Global
-              | Global DeclFuncoes Principal
-              | DeclFuncoes Principal
+              | Global DeclFuncoes 
+              | DeclFuncoes
+              | 
 
 Global : Programa
 
-DeclFuncoes   : DeclFuncao
+DeclFuncoes   : Inicio
               | DeclFuncao DeclFuncoes
 
 
-Principal     : _PRINCIPAL Programa
+Inicio     : _INICIO Programa
 
 Programa      : Acao
               | Acao Programa

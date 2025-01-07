@@ -11,21 +11,33 @@ precedence = (
     ('right', 'SUBTU', 'NEG'),  # Operadores unários (negativo)
 )
 
+def p_estrutura(p):
+    '''Estrutura : '''
 
 def p_estrutura(p):
     '''Estrutura : Global'''
 
-def p_estrutura_global_principal(p):
-    '''Estrutura : Global DeclFuncoes Principal '''
+def p_estrutura_inicio(p):
+    '''Estrutura : Global DeclFuncoes'''
 
-def p_estrutura_principal(p):
-    '''Estrutua : DeclFuncoes Principal'''
+def p_estrutural_sem_global(p):
+    '''Estrutura : DeclFuncoes'''
 
+def p_global(p):
+    '''Global : Programa'''
+
+ 
 def p_declFuncoes_unica(p):
-    '''DeclFuncoes : DecFuncao '''
+    '''DeclFuncoes : Inicio'''
 
 def p_declFuncoes(p):
-    '''DeclFuncoes : DeclFuncoes DecFuncao'''
+    '''DeclFuncoes : DeclFuncao DeclFuncoes'''
+   
+
+def p_inicio(p):
+    '''Inicio :  _INICIO "(" ")" "{" Programa "}" '''
+
+
 
 def p_programa_acao(p):
     '''Programa : Acao'''
@@ -39,15 +51,12 @@ def p_programa_acao_programa(p):
 
 def p_acao_funcao(p):
     '''Acao : Funcao'''
-
+    p[0] = p[1]
 def p_acao_DeclVariavel(p):
     '''Acao : DeclVariavel'''
     p[0] = p[1]
 
 
-def p_acao_DeclFuncao(p):
-    '''Acao :  DeclFuncao'''
-    p[0] = p[1]
 
 
 def p_acao_Atribuicao(p):
@@ -492,12 +501,12 @@ def p_ciclo_repitaTRANS(p):
 
 
 def p_decl_funcao(p):
-    '''DeclFuncao : Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"'''
+    '''DeclFuncao : _DEF Tipo ID "(" ")" "{" Programa _RETORNA Expressao "}"'''
     pass
 
 
 def p_decl_funcao_simples(p):
-    '''DeclFuncao : Tipo ID "(" ")" "{" _RETORNA Expressao "}"'''
+    '''DeclFuncao : _DEF Tipo ID "(" ")" "{" _RETORNA Expressao "}"'''
     pass
 
 
