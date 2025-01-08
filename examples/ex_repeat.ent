@@ -1,5 +1,0 @@
-auto t = 0
-repita {
-    escreva(t)
-    t = t + 1
-} ate que (t > 10)

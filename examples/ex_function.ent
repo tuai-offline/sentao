@@ -1,8 +1,0 @@
-int gerar_num() {
-    retorna 5
-}
-
-auto inicio() {
-    auto b = gerar_num() / 2
-    escreva(b)
-}

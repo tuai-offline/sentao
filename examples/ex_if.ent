@@ -1,8 +1,0 @@
-auto t = 54
-se (t == 54) entao {
-    escreva(t)
-} senao se (t == 15) {
-    escreva(t)
-} senao {
-    escreva("Erro")
-}

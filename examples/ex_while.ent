@@ -1,4 +1,0 @@
-auto t = 0
-enquanto (t <= 10) faca {
-    escreva(t)
-}

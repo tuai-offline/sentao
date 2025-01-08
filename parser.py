@@ -122,7 +122,7 @@ def p_global(p):
 
 
 def p_declFuncoes_unica(p):
-    '''DeclFuncoes : Inicio'''
+    '''DeclFuncoes : DeclInicio'''
 
 
 def p_declFuncoes(p):
@@ -130,7 +130,7 @@ def p_declFuncoes(p):
 
 
 def p_inicio(p):
-    '''Inicio : AssinaturaFuncaoInicio CorpoFuncao'''
+    '''DeclInicio : AssinaturaFuncaoInicio CorpoFuncao'''
 
 
 def p_programa_acao(p):
@@ -220,7 +220,7 @@ def p_decl_variavel(p):
         else:
             inicializacao0(esq)
 
-        stack_alloc(nome, esq)
+        escopo_alloc(nome, esq)
 
 
 def p_tipo_INT(p):
@@ -274,18 +274,26 @@ def p_atribuicao(p):
 
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
-            writevm(f"storeg {escopo[p[1]][0]}")
+            writevm(f"storel {escopo[p[1]][0]}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
     return
 
 
-def stack_alloc(nome, tipo):
+def escopo_alloc(nome, tipo):
+    assert nome not in parser.decls[-1], "Variável com ID já existente!"
     parser.decls[-1][nome] = (parser.sp, tipo)
     ret = parser.sp
     parser.sp += tipo.tamanho()
+    writevm(f"// ^ variável {nome}")
     return ret
+
+
+def escopo_dealloc(nome):
+    assert nome in parser.decls[-1], "Variável com ID não existente!"
+    (_, tipo) = parser.decls[-1].pop(nome)
+    parser.sp -= tipo.tamanho()
 
 
 def p_decl_atri_variavel_id(p):
@@ -313,7 +321,13 @@ def p_funcao(p):
     '''ChamarFuncao : ID "(" ")"'''
     writevm(f'pusha {p[1]}')
     writevm('call')
-    p[0] = p[1]
+
+    if p[1] not in parser.fun_decls:
+        print_err(f"Função '{p[1]}' não declarada!")
+        p[0] = None
+        return
+
+    p[0] = parser.fun_decls[p[1]]
 
 
 def p_indexacao(p):
@@ -365,33 +379,39 @@ def p_indices_rec(p):
 def p_funcao_escreve(p):
     '''ChamarFuncao : _ESCREVE "(" Expressao ")"'''
     writevm("writes")
+    writevm("writeln")
 
 
 def p_funcao_escrevei(p):
     '''ChamarFuncao : _ESCREVEI "(" Expressao ")"'''
     writevm("writei")
+    writevm("writeln")
 
 
 def p_funcao_escrever(p):
     '''ChamarFuncao : _ESCREVER "(" Expressao ")"'''
     writevm("writer")
+    writevm("writeln")
 
 
 def p_funcao_ler(p):
     '''ChamarFuncao : _LER "(" ")"'''
     writevm("read")
+    p[0] = TipoAST(Tipo.CARS)
 
 
 def p_funcao_leri(p):
     '''ChamarFuncao : _LERI "(" ")"'''
     writevm('read')
     writevm('atoi')
+    p[0] = TipoAST(Tipo.INT)
 
 
 def p_funcao_lerr(p):
     '''ChamarFuncao : _LERR  "(" ")"'''
     writevm('read')
     writevm('ator')
+    p[0] = TipoAST(Tipo.REAL)
 
 
 def p_expressao_id(p):
@@ -414,12 +434,7 @@ def p_expressao_const(p):
 
 def p_expressao_funcao(p):
     '''Expressao : ChamarFuncao'''
-    if p[1] not in parser.fun_decls:
-        print_err(f"Função '{p[1]}' não declarada!")
-        p[0] = None
-        return
-
-    p[0] = parser.fun_decls[p[1]]
+    p[0] = p[1]
 
 
 def p_expressao_indexacao(p):
@@ -658,51 +673,64 @@ def p_senao(p):
 
 
 def p_ciclo_para(p):
-    '''Ciclo : _PARA Intervalo "{" Programa "}"'''
+    '''Ciclo : _PARA Intervalo Escopo'''
     writevm(f'pushl {p[2]}')
     writevm('pushi 1')
     writevm('add')
-    writevm(f'storeg {p[2]}')
+    writevm(f'storel {p[2]}')
     labelf = parser.label_stack.pop()
     labeli = parser.label_stack.pop()
-    fim_escopo()
     writevm(f'jump {labeli}')
     writevm(f'{labelf}:')
 
+    escopo_dealloc('0inicio')
+    escopo_dealloc('0fim')
+    writevm(f'pop 2')
+
 
 def p_intervalo(p):
-    '''Intervalo : ID _NO _INTERVALO "(" INT "," INT ")"'''
+    '''Intervalo : IdPara _NO _INTERVALO "(" Expressao "," Expressao ")"'''
     inicio, fim = p[5], p[7]
+    if not inicio.int() or not fim.int():
+        print_err("Argumentos de intervalo devem ser do tipo 'INT'!")
+        return
 
+    ptr_inicio = escopo_alloc('0inicio', TipoAST(Tipo.INT))
+    ptr_fim = escopo_alloc('0fim', TipoAST(Tipo.INT))
+    ptr_i = p[1]
+
+    writevm(f'pushl {ptr_inicio}')
+    writevm(f'storel {ptr_i}')
+
+    writevm(f'{parser.label}:')
+    parser.label_stack.append(parser.label)
+    parser.label += 1
+    writevm(f'pushl {ptr_i}')
+    writevm(f'pushl {ptr_fim}')
+    writevm(f'inf')
+    writevm(f'jz {parser.label}')
+    parser.label_stack.append(parser.label)
+    parser.label += 1
+
+    p[0] = ptr_i
+
+
+def p_id_para(p):
+    '''IdPara : ID'''
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             if not escopo[p[1]][1].int():
                 print_err(
                     f"Variável {p[1]} já declarada com tipo diferente de 'INT'!"
                 )
-            ptr = escopo[p[1]][0]
-            writevm(f'pushi {inicio}')
-            writevm(f'storeg {ptr}')
+            ptr_i = escopo[p[1]][0]
             break
     else:
         tipo = TipoAST(Tipo.INT)
-        ptr = stack_alloc(p[1], tipo)
-        print(parser.decls)
-        writevm(f'pushi {inicio}')
+        inicializacao0(tipo)
+        ptr_i = escopo_alloc(p[1], tipo)
 
-    inicio_escopo()
-
-    writevm(f'{parser.label}:')
-    parser.label_stack.append(parser.label)
-    parser.label += 1
-    writevm(f'pushl {ptr}')
-    writevm(f'pushi {fim}')
-    writevm(f'inf')
-    writevm(f'jz {parser.label}')
-    parser.label_stack.append(parser.label)
-    parser.label += 1
-
-    p[0] = ptr
+    p[0] = ptr_i
 
 
 def p_ciclo_enquanto(p):
@@ -757,17 +785,18 @@ def p_decl_funcao(p):
         return
 
     parser.fun_decls[nome] = esq
-    writevm('return')
 
 
 def p_decl_corpo_funcao_simples(p):
-    '''CorpoFuncao : "{" inicio_escopo Retorno fim_escopo "}"'''
-    p[0] = p[3]
+    '''CorpoFuncao : "{" Retorno "}"'''
+    p[0] = p[2]
+    writevm('return')
 
 
 def p_decl_corpo_funcao(p):
     '''CorpoFuncao : "{" inicio_escopo Programa Retorno fim_escopo "}"'''
     p[0] = p[4]
+    writevm('return')
 
 
 def p_assinatura_funcao(p):

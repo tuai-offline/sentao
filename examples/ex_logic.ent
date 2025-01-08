@@ -1,7 +1,0 @@
-bool a = 1
-bool b = 0
-bool c = 1
-
-se (!(a || b && b || c)) entao {
-    escreva("Boa!")
-}

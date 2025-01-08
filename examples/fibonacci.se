@@ -1,0 +1,13 @@
+def int inicio() {
+    int x = 0, y = 1, t
+    escreve("Tamanho de sequência de fibonacci:")
+    int n = leri()
+    para i no intervalo(0, n) {
+        escrevei(x)
+        t = x
+        x = y
+        y = t + y
+    }
+
+    retorna 0
+}

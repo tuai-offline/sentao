@@ -3,13 +3,10 @@ Estrutura     : Global
               | DeclFuncoes
               | 
 
-Global : Programa
+Global        : Programa
 
-DeclFuncoes   : Inicio
+DeclFuncoes   : DeclInicio
               | DeclFuncao DeclFuncoes
-
-
-Inicio     : _INICIO Programa
 
 Programa      : Acao
               | Acao Programa
@@ -20,39 +17,35 @@ Acao          : DeclVariavel
               | Condicao
               | Ciclo
 
-Escopo        : '{' inicio_escopo Programa fim_escopo '}'
-
-inicio_escopo :
-
-fim_escopo    :
-
 DeclVariavel  : Tipo LDeclVariaveis
 
-Tipo          : INTEIRO
-              | REAL 
-              | AUTO
-              | DYNAMIC
-              | CARACTER
-              | CARACTERES
+LDeclVariaveis   : DeclAtriVariavel
+                 | DeclAtriVariavel "," LDeclVariaveis
+
+DeclAtriVariavel : ID
+                 | ID = Expressao 
+
+Tipo          : _INT
+              | _REAL 
+              | _AUTO
+              | _CAR
+              | _CARS
               | Tipo [ INT ]
-
-LDeclVariaveis: DeclAtriVariavel
-              | DeclAtriVariavel "," LDeclVariaveis
-
-DeclAtriVariavel: ID
-                | ID = Expressao 
 
 Atribuicao    : ID = Expressao
 
-ChamarFuncao        : ID "(" ")"
-              | _ESCREVE "(" ARG ")"
-              | _ESCREVER  "(" ARG ")"
-              | _ESCREVER "(" ARG ")"
+ChamarFuncao  : ID "(" ")"
+              | _ESCREVE "(" Expressao ")"
+              | _ESCREVER  "(" Expressao ")"
+              | _ESCREVER "(" Expressao ")"
               | _LER "(" ")"
               | _LERI "(" ")"
               | _LERR "(" ")"
 
-Indexacao     : ID "[" INT "]"
+Indexacao     : ID Indices
+
+Indices       : "[" INT "]"
+              | Indices "[" INT "]"
 
 Expressao     : ID
               | TipoConstante
@@ -86,8 +79,8 @@ TipoConstante : INT
               | BOOL
               | [ LTipoConstante ]
 
-LTipoConstante: TipoConstante
-              | TipoConstante , LTipoConstante
+LTipoConstante : TipoConstante
+               | TipoConstante , LTipoConstante
 
 Condicao      : _SE "(" Expressao ")" _ENTAO Escopo 
               | _SE "(" Expressao ")" _ENTAO Escopo _SENAO Escopo
@@ -97,6 +90,19 @@ Ciclo         : _PARA ID _NO _INTERVALO "(" INT "," INT ")" Escopo
               | _ENQUANTO "(" Expressao ")" _FACA Escopo
               | _REPITA Escopo _ATE _QUE "(" Expressao ")"
 
-DeclFuncao    : Tipo IdFuncao "(" ")" "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"
+Escopo        : '{' inicio_escopo Programa fim_escopo '}'
 
-IdFuncao      : ID
+inicio_escopo :
+
+fim_escopo    :
+
+DeclInicio             : AssinaturaFuncaoInicio CorpoFuncao
+
+DeclFuncao             : AssinaturaFuncao CorpoFuncao 
+
+AssinaturaFuncaoInicio : _DEF _INT _INICIO "(" ")"
+
+AssinaturaFuncao       : _DEF Tipo ID "(" ")"
+
+CorpoFuncao            : "{" inicio_escopo Programa _RETORNA Expressao fim_escopo "}"
+                       | "{" _RETORNA Expressao "}"
