@@ -110,11 +110,23 @@ def p_estrutura(p):
 
 
 def p_estrutura_inicio(p):
-    '''Estrutura : Global DeclFuncoes'''
+    '''Estrutura : Global Preludio DeclFuncoes'''
+
+def p_Preludio(p):
+    '''Preludio : '''
+
+    writevm("start")
+    writevm("pusha inicio")
+    writevm("call")
+    writevm("stri")
+    writevm('pushs "Programa terminou com resultado: "')
+    writevm("concat")
+    writevm('writes')
+    writevm("stop")
 
 
 def p_estrutural_sem_global(p):
-    '''Estrutura : DeclFuncoes'''
+    '''Estrutura : Preludio DeclFuncoes'''
 
 
 def p_global(p):
@@ -491,7 +503,7 @@ def p_expressao_bin_mod(p):
         if tipo.int() and tipo.singular():
             writevm('mod')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[2]}" não é possível para "{tipo}"')
     p[0] = tipo
 
 
@@ -522,7 +534,7 @@ def p_expressao_bin_ig(p):
         if tipo.singular():
             writevm('equal')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[2]}" não é possível para "{tipo}"')
     p[0] = tipo
 
 
@@ -534,7 +546,7 @@ def p_expressao_bin_dif(p):
             writevm('equal')
             writevm('not')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[2]}" não é possível para "{tipo}"')
     p[0] = tipo
 
 
@@ -545,7 +557,7 @@ def p_expressao_bin_e(p):
         if tipo.numerico() and tipo.singular():
             writevm('and')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[2]}" não é possível para "{tipo}"')
     p[0] = tipo
 
 
@@ -556,9 +568,8 @@ def p_expressao_bin_ou(p):
         if tipo.numerico() and tipo[1].singular():
             writevm('or')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[2]}" não é possível para "{tipo}"')
     p[0] = tipo
-
 
 def p_expressao_un_subt(p):
     '''Expressao : SUBT Expressao %prec SUBTU'''
@@ -577,12 +588,12 @@ def p_expressao_un_subt(p):
 
 def p_expressao_un_neg(p):
     '''Expressao : NEG Expressao %prec NEG'''
-    tipo = compativel(p[1], p[3])
+    tipo = p[2]
     if tipo:
         if tipo.numerico() and tipo.singular():
             writevm('not')
         else:
-            print_err(f'Operação "{op}" não é possível para "{tipo}"')
+            print_err(f'Operação "{p[1]}" não é possível para "{tipo}"')
     p[0] = tipo
 
 
@@ -868,15 +879,6 @@ def init_parser():
     parser.label_stack = []
 
 
-def preludio():
-    writevm("start")
-    writevm("pusha inicio")
-    writevm("call")
-    writevm("stri")
-    writevm('pushs "Programa terminou com resultado: "')
-    writevm("concat")
-    writevm('writes')
-    writevm("stop")
 
 
 if __name__ == '__main__':
@@ -897,7 +899,6 @@ if __name__ == '__main__':
     if args.input_file:
         output_file = io.StringIO()
         with open(args.input_file, 'r') as f:
-            preludio()
             parser.parse(f.read(), tracking=True)
             if not parser.exito: exit(1)
             print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
@@ -928,7 +929,6 @@ if __name__ == '__main__':
 
         source = '\n'.join(lines)
         print("==== Instruções EWVM ====")
-        preludio()
         parser.parse(source, tracking=True)
         if not parser.exito: exit(1)
         print("\033[92mAnálise sintática concluída com sucesso!\033[0m")
