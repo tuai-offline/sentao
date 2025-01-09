@@ -37,16 +37,59 @@ document.getElementById("run-btn").addEventListener("click", async function() {
             body: JSON.stringify({ code: code })
         });
 
+        const result = await response.json();
+
         if (!response.ok) {
-            throw new Error('Erro na compilação');
+            if (result.error_type === 'compilation_error') {
+                outputEwvm.textContent = '';
+                outputProgram.textContent = result.error;
+            } else {
+                outputEwvm.textContent = '';
+                outputProgram.textContent = "Erro do servidor: " + result.error;
+            }
+            return;
         }
 
-        const result = await response.json();
         outputEwvm.textContent = result.ewvm || '';
         outputProgram.textContent = result.output || '';
 
     } catch (error) {
         outputEwvm.textContent = '';
-        outputProgram.textContent = "Erro: " + error.message;
+        outputProgram.textContent = "Erro de conexão: " + error.message;
     }
+});
+
+// Função para copiar texto
+function copyText(text) {
+    // Criar elemento temporário
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    
+    // Selecionar e copiar
+    textarea.select();
+    document.execCommand('copy');
+    
+    // Remover elemento temporário
+    document.body.removeChild(textarea);
+}
+
+// Adicionar event listeners para os botões de cópia
+document.querySelectorAll('.copy-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const text = document.getElementById(targetId).textContent;
+        
+        copyText(text);
+        
+        // Feedback visual
+        this.classList.add('success');
+        this.textContent = 'Copiado!';
+        
+        // Resetar botão após 2 segundos
+        setTimeout(() => {
+            this.classList.remove('success');
+            this.textContent = 'Copiar';
+        }, 2000);
+    });
 });

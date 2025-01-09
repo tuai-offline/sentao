@@ -30,7 +30,11 @@ def compile():
                               capture_output=True, text=True)
         
         if result.returncode != 0:
-            return jsonify({'error': clean_ansi(result.stderr)}), 400
+            error_output = result.stderr if result.stderr else result.stdout
+            return jsonify({
+                'error': clean_ansi(error_output),
+                'error_type': 'compilation_error'
+            }), 400
 
         # Ler o conteúdo do arquivo EWVM
         ewvm_content = ''
@@ -53,7 +57,10 @@ def compile():
         })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'error': str(e),
+            'error_type': 'server_error'
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
