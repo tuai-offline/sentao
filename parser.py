@@ -5,6 +5,7 @@ import os
 import argparse
 import io
 from enum import Enum
+from math import prod
 
 
 class Tipo(Enum):
@@ -16,9 +17,9 @@ class Tipo(Enum):
 
 class TipoAST():
 
-    def __init__(self, tipo, *dimensoes):
+    def __init__(self, tipo, dimensoes=[1]):
         self.tipo = tipo
-        self.dimensoes = list(dimensoes) if dimensoes else [1]
+        self.dimensoes = dimensoes if len(dimensoes) else [1]
 
     def real(self):
         return self.tipo == Tipo.REAL
@@ -71,11 +72,11 @@ def compativel(esq, dir):
         return esq
     elif esq.dimensoes == dir.dimensoes:
         if esq.int() and dir.int():
-            return TipoAST(Tipo.INT, *esq.dimensoes)
+            return TipoAST(Tipo.INT, esq.dimensoes)
         elif esq.numerico() and dir.numerico():
-            return TipoAST(Tipo.REAL, *esq.dimensoes)
+            return TipoAST(Tipo.REAL, esq.dimensoes)
         elif esq.cars() and dir.cars():
-            return TipoAST(Tipo.CARS, *esq.dimensoes)
+            return TipoAST(Tipo.CARS, esq.dimensoes)
 
     print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
     return None
@@ -293,25 +294,30 @@ def p_atribuicao(p):
     '''Atribuicao : ID "=" Expressao'''
     p[0] = (p[1], p[3])
 
-    if compativel(p[1], p[3]) and compativel(p[1], p[3]) != p[3]:
+    for escopo in reversed(parser.decls):
+        if p[1] in escopo:
+            ptr, esq = escopo[p[1]]
+            break
+    else:
+        print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
+        return
+
+    dir = p[3]
+    if compativel(esq, dir) and compativel(esq, dir) != esq:
         print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
         return
 
-    for escopo in reversed(parser.decls):
-        if p[1] in escopo:
-            if p[1] in parser.decls_global:
-                writevm(f"storeg {escopo[p[1]][0]}")
-            else:
-                writevm(f"storel {escopo[p[1]][0]}")
-            return
-
-    print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
+    if p[1] in parser.decls_global:
+        writevm(f"storeg {ptr}")
+    else:
+        writevm(f"storel {ptr}")
     return
 
 
 def p_atribuicao_array(p):
     '''Atribuicao : IndexacaoEscrita "=" Expressao'''
 
+    esq = p[1]
     if compativel(p[1], p[3]) and compativel(p[1], p[3]) != p[3]:
         print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
         return
@@ -375,47 +381,63 @@ def p_funcao(p):
 
     p[0] = parser.fun_decls[p[1]]
 
-def p_indexacao_escrita_bidimensional(p):
-    '''IndexacaoEscrita : IdIndexacao "[" Expressao "]"  "[" Expressao "]"'''
 
-    if p[1] == None:
-        return
+def indexacao(tipo_id, tipo_expr):
+    if tipo_id == None:
+        return None
 
-    if p[3].tipo != Tipo.INT  or p[6].tipo != Tipo.INT:
+    if tipo_expr.tipo != Tipo.INT:
         print_err("Indexação com expressão inválida!")
+        return None
+
+    if not tipo_id.singular():
+        multiplicador = prod(tipo_id.dimensoes[1:])
+        writevm(f"pushi {multiplicador}")
+        writevm("mul")
+
+    return TipoAST(tipo_id.tipo, tipo_id.dimensoes[1:])
+
+
+def p_indexacao_escrita_bidimensional(p):
+    '''IndexacaoEscrita : IndexacaoEscrita  "[" Expressao "]"'''
+
+    p[0] = indexacao(p[1], p[3])
+    if not p[0]:
         return
 
     writevm("add")
-    p[0] = TipoAST(p[1].tipo)
 
 
 def p_indexacao_escrita_unidimensional(p):
     '''IndexacaoEscrita : IdIndexacao "[" Expressao "]"'''
 
-    if p[1] == None:
-        return
-
-    if p[3].tipo != Tipo.INT:
-        print_err("Indexação com expressão inválida!")
+    p[0] = indexacao(p[1], p[3])
+    if not p[0]:
         return
 
     writevm("add")
-    p[0] = TipoAST(p[1].tipo)
 
 
 def p_indexacao_leitura_unidimensional(p):
     '''IndexacaoLeitura : IdIndexacao "[" Expressao "]"'''
 
-    if p[1] == None:
-        return
-
-    if p[3].tipo != Tipo.INT:
-        print_err("Indexação com expressão inválida!")
+    p[0] = indexacao(p[1], p[3])
+    if not p[0]:
         return
 
     writevm("add")
-    writevm("loadn")
-    p[0] = TipoAST(p[1].tipo)
+    if p[0].singular(): writevm("loadn")
+
+
+def p_indexacao_leitura_bidimensional(p):
+    '''IndexacaoLeitura : IndexacaoLeitura "[" Expressao "]"'''
+
+    p[0] = indexacao(p[1], p[3])
+    if not p[0]:
+        return
+
+    writevm("add")
+    if p[0].singular(): writevm("loadn")
 
 
 def p_indexacao_unidimensional_id(p):
@@ -424,15 +446,12 @@ def p_indexacao_unidimensional_id(p):
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             ptr, tipo = escopo[p[1]]
-            if len(tipo.dimensoes) == 1 and not tipo.singular():
-                if p[1] in parser.decls_global:
-                    writevm("pushgp")
-                else:
-                    writevm("pushfp")
-                writevm(f"pushi {ptr}")
-                p[0] = tipo
+            if p[1] in parser.decls_global:
+                writevm("pushgp")
             else:
-                print_err("Indexação em tipo inválido!")
+                writevm("pushfp")
+            writevm(f"pushi {ptr}")
+            p[0] = tipo
             break
     else:
         print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")

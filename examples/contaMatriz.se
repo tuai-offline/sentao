@@ -1,0 +1,22 @@
+auto a = [[[1,2],[1,2]],[[1,2],[1,2]]]
+
+def int inicio() {
+    int contador
+
+    int x = 2
+    int y = 2
+    int z = 2
+    para i no intervalo(0, x) {
+        para j no intervalo(0, y) {
+            para k no intervalo(0, z) {
+                se (a[i][j][k] == 2) entao {
+                    contador = contador + 1
+                }
+            }
+        }
+    }
+
+    escrevei(contador)
+
+    retorna 0
+}
