@@ -354,32 +354,180 @@ O compilador mantém controle das variáveis através de um contador de posiçõ
 
 = Testes e Validação
 == Casos de Teste
-Apresentação dos casos de teste implementados.
+O compilador foi testado com diversos programas de exemplo que cobrem todas as funcionalidades implementadas. Os testes foram organizados em diferentes categorias:
 
-== Exemplos de Programas
+=== Testes de Estruturas Básicas
+- Declaração e atribuição de variáveis
+- Operações aritméticas e lógicas
+- Entrada e saída básica
+
+=== Testes de Estruturas de Controle
 #figure(
   ```
-  // Exemplo de programa em Ent
-  int x, y;
-  x = 5;
-  y = x * 2;
-  print(y);
+  // Teste de estruturas condicionais aninhadas
+  int x;
+  x = 10;
+  se (x > 5) entao {
+    se (x < 15) entao {
+      x = x + 1;
+    }
+  }
+
+  // Teste de ciclos
+  int i;
+  i = 0;
+  enquanto (i < 5) faca {
+    i = i + 1;
+  }
   ```,
-  caption: "Exemplo de Código Fonte"
+  caption: "Exemplos de Testes de Estruturas de Controle"
+)
+
+=== Testes de Escopos
+#figure(
+  ```
+  int x;
+  x = 5;
+  {
+    int x;  // Variável diferente em novo escopo
+    x = 10;
+  }
+  // x aqui ainda é 5
+  ```,
+  caption: "Teste de Escopo Aninhado"
 )
 
 == Resultados Obtidos
-Análise dos resultados dos testes realizados.
+=== Análise de Desempenho
+O compilador demonstrou bom desempenho em:
+- Detecção de erros de sintaxe
+- Gestão de escopos aninhados
+- Geração de código para a máquina virtual
+
+=== Pontos de Melhoria Identificados
+- Otimização do código gerado
+- Melhor tratamento de erros
+- Suporte a mais tipos de dados
 
 = Conclusão
-== Funcionalidades Implementadas
-== Limitações
-== Trabalho Futuro
 
-= Bibliografia
+O desenvolvimento deste compilador para a linguagem Ent representou um desafio significativo que nos permitiu aplicar e aprofundar conhecimentos em várias áreas da computação, especialmente em processamento de linguagens e compiladores.
+
+== Síntese do Trabalho
+O projeto resultou na implementação de um compilador funcional que inclui:
+- Um analisador léxico robusto que reconhece todos os tokens da linguagem
+- Um analisador sintático capaz de processar a gramática completa da linguagem
+- Um sistema de gestão de escopos que permite variáveis locais e globais
+- Um gerador de código para uma máquina virtual de stack
+- Uma suite de testes abrangente com exemplos práticos
+
+== Aprendizagens
+O desenvolvimento deste projeto proporcionou várias aprendizagens importantes:
+- Compreensão profunda do processo de compilação e suas fases
+- Experiência prática com ferramentas de geração de compiladores (PLY)
+- Desenvolvimento de habilidades de debug e teste de compiladores
+- Melhor entendimento de gramáticas e análise sintática
+- Experiência com geração de código intermediário
+
+== Desafios Superados
+Durante o desenvolvimento, enfrentamos e superamos vários desafios:
+- Implementação correta da precedência de operadores
+- Gestão de escopos aninhados
+- Tratamento adequado de erros léxicos e sintáticos
+- Geração de código eficiente para a máquina virtual
+
+== Contribuições Individuais
+O trabalho foi desenvolvido de forma colaborativa, com cada membro contribuindo em diferentes aspectos:
+- Davide Santos: Análise léxica e documentação
+- Edgar Araújo: Análise sintática e geração de código
+- Gabriel Paiva: Sistema de tipos e testes
+
+== Perspectivas Futuras
+Além das melhorias já mencionadas na seção de trabalho futuro, identificamos outras possibilidades interessantes:
+- Implementação de um sistema de módulos
+- Adição de recursos de programação orientada a objetos
+- Desenvolvimento de uma IDE simples para a linguagem
+- Criação de uma biblioteca padrão mais abrangente
+
+Esta experiência nos proporcionou uma compreensão mais profunda dos desafios e complexidades envolvidos no desenvolvimento de compiladores, bem como das melhores práticas para superá-los. O projeto não apenas cumpriu seus objetivos educacionais, mas também nos preparou para desafios futuros no campo do desenvolvimento de linguagens de programação.
 
 = Anexos
 == Manual da Linguagem
+=== Sintaxe Básica
+#figure(
+  ```
+  // Declarações
+  int x;
+  real y;
+  car c;
+  cars s;
+
+  // Atribuições
+  x = 10;
+  y = 3.14;
+  c = 'a';
+  s = "texto";
+
+  // Estruturas de controle
+  se (condição) entao {
+    // código
+  }
+
+  enquanto (condição) faca {
+    // código
+  }
+  ```,
+  caption: "Exemplos de Sintaxe Básica"
+)
+
 == Exemplos de Código
+=== Exemplo 1: Calculadora Simples
+#figure(
+  ```
+  int a, b, resultado;
+  
+  // Leitura de valores
+  escreve("Digite o primeiro número: ");
+  a = leri();
+  
+  escreve("Digite o segundo número: ");
+  b = leri();
+  
+  // Operações
+  resultado = a + b;
+  escrevei(resultado);
+  ```,
+  caption: "Calculadora Simples"
+)
+
+=== Exemplo 2: Verificação de Números
+#figure(
+  ```
+  int num;
+  
+  escreve("Digite um número: ");
+  num = leri();
+  
+  se (num > 0) entao {
+    escreve("Positivo");
+  } senao {
+    se (num < 0) entao {
+      escreve("Negativo");
+    } senao {
+      escreve("Zero");
+    }
+  }
+  ```,
+  caption: "Verificação de Números"
+)
+
 == Código Fonte do Compilador
+O código fonte completo do compilador está disponível e inclui:
+- Analisador léxico (lexer.py)
+- Analisador sintático (parser.py)
+- Exemplos de programas (pasta examples/)
+- Documentação técnica
+
+= Bibliografia
+#bibliography("bibliography.bib")
 
