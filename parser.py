@@ -375,6 +375,19 @@ def p_funcao(p):
 
     p[0] = parser.fun_decls[p[1]]
 
+def p_indexacao_escrita_bidimensional(p):
+    '''IndexacaoEscrita : IdIndexacao "[" Expressao "]"  "[" Expressao "]"'''
+
+    if p[1] == None:
+        return
+
+    if p[3].tipo != Tipo.INT  or p[6].tipo != Tipo.INT:
+        print_err("Indexação com expressão inválida!")
+        return
+
+    writevm("add")
+    p[0] = TipoAST(p[1].tipo)
+
 
 def p_indexacao_escrita_unidimensional(p):
     '''IndexacaoEscrita : IdIndexacao "[" Expressao "]"'''
