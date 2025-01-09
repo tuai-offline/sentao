@@ -123,6 +123,9 @@ def p_Preludio(p):
     writevm("concat")
     writevm('writes')
     writevm("stop")
+    parser.global_flag = 0
+    parser.global_stack = parser.decls[0]
+
 
 
 def p_estrutural_sem_global(p):
@@ -131,7 +134,6 @@ def p_estrutural_sem_global(p):
 
 def p_global(p):
     '''Global : Programa'''
-
 
 def p_declFuncoes_unica(p):
     '''DeclFuncoes : DeclInicio'''
@@ -286,7 +288,11 @@ def p_atribuicao(p):
 
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
-            writevm(f"storel {escopo[p[1]][0]}")
+            if p[1] in parser.global_stack or parser.global_flag:
+                writevm(f"storeg {escopo[p[1]][0]}")
+            else:
+
+                writevm(f"storel {escopo[p[1]][0]}")
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -368,7 +374,10 @@ def p_indexacao(p):
                 multiplicador *= dimensao
 
             ptr = escopo[p[1]][0] + indice_linear
-            writevm(f"pushl {ptr}")
+            if p[1] in parser.global_stack or parser.global_flag:
+                writevm(f"pushg {ptr}")
+            else:
+                writevm(f"pushl {ptr}")
 
             p[0] = TipoAST(escopo[p[1]][1].tipo)
             return
@@ -432,7 +441,13 @@ def p_expressao_id(p):
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             ptr, p[0] = escopo[p[1]]
-            writevm(f"pushl {ptr}")
+
+            if p[1] in parser.global_stack or parser.global_flag:
+                writevm(f"pushg {ptr}")
+            
+            else:
+                writevm(f"pushl {ptr}")
+            
             return
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
@@ -685,10 +700,19 @@ def p_senao(p):
 
 def p_ciclo_para(p):
     '''Ciclo : _PARA Intervalo Escopo'''
-    writevm(f'pushl {p[2]}')
+    flag = p[2][1]
+
+    if flag:
+        writevm(f'pushg {p[2][0]}')
+    else:
+        writevm(f'pushl {p[2][0]}')
     writevm('pushi 1')
     writevm('add')
-    writevm(f'storel {p[2]}')
+    if flag:
+        writevm(f'storeg {p[2][0]}')
+    else:
+        writevm(f'storel {p[2][0]}')
+    
     labelf = parser.label_stack.pop()
     labeli = parser.label_stack.pop()
     writevm(f'jump {labeli}')
@@ -702,6 +726,7 @@ def p_ciclo_para(p):
 def p_intervalo(p):
     '''Intervalo : IdPara _NO _INTERVALO "(" Expressao "," Expressao ")"'''
     inicio, fim = p[5], p[7]
+    flag = 1
     if not inicio.int() or not fim.int():
         print_err("Argumentos de intervalo devem ser do tipo 'INT'!")
         return
@@ -711,7 +736,11 @@ def p_intervalo(p):
     ptr_i = p[1]
 
     writevm(f'pushl {ptr_inicio}')
-    writevm(f'storel {ptr_i}')
+    if p[1] in parser.global_stack or parser.global_flag:
+        writevm(f'storeg {ptr_i}')
+    else:
+        writevm(f'storel {ptr_i}')
+        flag = 0
 
     writevm(f'{parser.label}:')
     parser.label_stack.append(parser.label)
@@ -723,7 +752,7 @@ def p_intervalo(p):
     parser.label_stack.append(parser.label)
     parser.label += 1
 
-    p[0] = ptr_i
+    p[0] = (ptr_i, flag)
 
 
 def p_id_para(p):
@@ -822,6 +851,7 @@ def p_assinatura_funcao_inicio(p):
     '''AssinaturaFuncaoInicio : _DEF _INT _INICIO "(" ")"'''
     writevm(f'{p[3]}:')
     inicializacao0(TipoAST(Tipo.INT))
+    print('dlsjdsdjsdlsjd')
     writevm(f'start')
     p[0] = (p[3], p[2])
 
@@ -874,6 +904,8 @@ def init_parser():
     parser.decls = [{}]
     parser.fun_decls = {}
     parser.sp = 0
+    parser.global_stack = {}
+    parser.global_flag = 1
     parser.escopo_stack = []
     parser.label = 0
     parser.label_stack = []

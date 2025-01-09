@@ -1,3 +1,4 @@
+int a = 10
 def int inicio() {
     int x = 0, y = 1, t
     escreve("Tamanho de sequência de fibonacci:")
@@ -8,6 +9,6 @@ def int inicio() {
         x = y
         y = t + y
     }
-
+    a = 40
     retorna 0
 }
