@@ -54,7 +54,7 @@ class TipoAST():
         return self
 
     def __eq__(self, dir):
-        return self.tipo == dir.tipo and self.dimensoes == dir.dimensoes
+        return dir and self.tipo == dir.tipo and self.dimensoes == dir.dimensoes
 
     def __str__(self):
         str = f"{self.tipo.name}"
@@ -188,15 +188,22 @@ def p_escopo(p):
 
 def inicio_escopo():
     parser.decls.append({})
-    parser.escopo_stack.append(parser.sp)
+    parser.escopo_stack.append(
+        parser.sp_global if parser.global_flag else parser.sp)
 
 
 def fim_escopo():
-    removed_escopo = parser.decls.pop()
+    parser.decls.pop()
     last_sp = parser.escopo_stack.pop()
-    if parser.sp - last_sp > 0:
-        writevm(f'pop {parser.sp - last_sp}')
-    parser.sp = last_sp
+
+    sp = parser.sp_global if parser.global_flag else parser.sp
+    if sp - last_sp > 0:
+        writevm(f'pop {sp - last_sp}')
+
+    if parser.global_flag:
+        parser.sp_global = last_sp
+    else:
+        parser.sp = last_sp
 
 
 def p_inicio_escopo(p):
@@ -286,6 +293,10 @@ def p_atribuicao(p):
     '''Atribuicao : ID "=" Expressao'''
     p[0] = (p[1], p[3])
 
+    if compativel(p[1], p[3]) and compativel(p[1], p[3]) != p[3]:
+        print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
+        return
+
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
             if p[1] in parser.decls_global:
@@ -296,6 +307,16 @@ def p_atribuicao(p):
 
     print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
     return
+
+
+def p_atribuicao_array(p):
+    '''Atribuicao : IndexacaoEscrita "=" Expressao'''
+
+    if compativel(p[1], p[3]) and compativel(p[1], p[3]) != p[3]:
+        print_err(f'Tipos incompatíveis "{esq}" e "{dir}"!')
+        return
+
+    writevm("storen")
 
 
 def escopo_alloc(nome, tipo):
@@ -355,43 +376,93 @@ def p_funcao(p):
     p[0] = parser.fun_decls[p[1]]
 
 
-def p_indexacao(p):
-    '''Indexacao : ID Indices'''
+def p_indexacao_escrita_unidimensional(p):
+    '''IndexacaoEscrita : IdIndexacao "[" Expressao "]"'''
 
-    indices = p[2]
+    if p[1] == None:
+        return
+
+    if p[3].tipo != Tipo.INT:
+        print_err("Indexação com expressão inválida!")
+        return
+
+    writevm("add")
+    p[0] = TipoAST(p[1].tipo)
+
+
+def p_indexacao_leitura_unidimensional(p):
+    '''IndexacaoLeitura : IdIndexacao "[" Expressao "]"'''
+
+    if p[1] == None:
+        return
+
+    if p[3].tipo != Tipo.INT:
+        print_err("Indexação com expressão inválida!")
+        return
+
+    writevm("add")
+    writevm("loadn")
+    p[0] = TipoAST(p[1].tipo)
+
+
+def p_indexacao_unidimensional_id(p):
+    '''IdIndexacao : ID'''
+
     for escopo in reversed(parser.decls):
         if p[1] in escopo:
-            dimensoes = escopo[p[1]][1].dimensoes
-
-            if len(dimensoes) != len(indices):
-                print_err(f"Acesso em array '{p[1]}' inválido!")
-                break
-
-            indice_linear = 0
-            multiplicador = 1
-            for indice, dimensao in zip(reversed(indices),
-                                        reversed(dimensoes)):
-                if indice < -dimensao or indice >= dimensao:
-                    print_err(f"Acesso em array '{p[1]}' fora dos limites!")
-                    break
-
-                if indice < 0: indice = indice + dimensao
-
-                indice_linear += indice * multiplicador
-                multiplicador *= dimensao
-
-            ptr = escopo[p[1]][0] + indice_linear
-            if p[1] in parser.decls_global:
-                writevm(f"pushg {ptr}")
+            ptr, tipo = escopo[p[1]]
+            if len(tipo.dimensoes) == 1 and not tipo.singular():
+                if p[1] in parser.decls_global:
+                    writevm("pushgp")
+                else:
+                    writevm("pushfp")
+                writevm(f"pushi {ptr}")
+                p[0] = tipo
             else:
-                writevm(f"pushl {ptr}")
-
-            p[0] = TipoAST(escopo[p[1]][1].tipo)
-            return
+                print_err("Indexação em tipo inválido!")
+            break
     else:
         print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
 
-    return
+
+# def p_indexacao_multidimensional(p):
+#     '''Indexacao : ID Indices'''
+
+#     indices = p[2]
+#     for escopo in reversed(parser.decls):
+#         if p[1] in escopo:
+#             dimensoes = escopo[p[1]][1].dimensoes
+
+#             if len(dimensoes) != len(indices):
+#                 print_err(f"Acesso em array '{p[1]}' inválido!")
+#                 break
+
+#             indice_linear = 0
+#             multiplicador = 1
+#             for indice, dimensao in zip(reversed(indices),
+#                                         reversed(dimensoes)):
+#                 if indice < -dimensao or indice >= dimensao:
+#                     print_err(f"Acesso em array '{p[1]}' fora dos limites!")
+#                     break
+
+#                 if indice < 0: indice = indice + dimensao
+
+#                 indice_linear += indice * multiplicador
+#                 multiplicador *= dimensao
+
+#             ptr = escopo[p[1]][0] + indice_linear
+#             if p[1] in parser.decls_global:
+#                 writevm(f"pushg {ptr}")
+#             else:
+#                 writevm(f"pushl {ptr}")
+#             writevm(f"// ^ {p[1]}")
+
+#             p[0] = TipoAST(escopo[p[1]][1].tipo)
+#             return
+#     else:
+#         print_err(f"Variável '{p[1]}' não declarada em nenhum escopo!")
+
+#     return
 
 
 def p_indices(p):
@@ -442,6 +513,20 @@ def p_funcao_lerr(p):
     p[0] = TipoAST(Tipo.REAL)
 
 
+def p_funcao_len(p):
+    '''ChamarFuncao : _LEN "(" ID ")"'''
+
+    for escopo in reversed(parser.decls):
+        if p[3] in escopo:
+            ptr, tipo = escopo[p[3]]
+            writevm(f"pushi {tipo.dimensoes[-1]}")
+            break
+    else:
+        print_err(f"Variável '{p[3]}' não declarada em nenhum escopo!")
+
+    p[0] = TipoAST(Tipo.INT)
+
+
 def p_expressao_id(p):
     '''Expressao : ID'''
 
@@ -453,6 +538,7 @@ def p_expressao_id(p):
                 writevm(f"pushg {ptr}")
             else:
                 writevm(f"pushl {ptr}")
+            writevm(f"// ^ {p[1]}")
 
             return
 
@@ -471,7 +557,7 @@ def p_expressao_funcao(p):
 
 
 def p_expressao_indexacao(p):
-    '''Expressao : Indexacao'''
+    '''Expressao : IndexacaoLeitura'''
     p[0] = p[1]
 
 
@@ -733,33 +819,37 @@ def p_ciclo_para(p):
 def p_intervalo(p):
     '''Intervalo : IdPara _NO _INTERVALO "(" Expressao "," Expressao ")"'''
     inicio, fim = p[5], p[7]
-    flag = 1
     if not inicio.int() or not fim.int():
         print_err("Argumentos de intervalo devem ser do tipo 'INT'!")
         return
 
     ptr_inicio = escopo_alloc('0inicio', TipoAST(Tipo.INT))
     ptr_fim = escopo_alloc('0fim', TipoAST(Tipo.INT))
-    ptr_i = p[1]
+    ptr_i, ptr_i_global = p[1]
 
     writevm(f'pushl {ptr_inicio}')
-    if p[1] in parser.decls_global:
+    writevm(f"// ^ 0inicio")
+    if ptr_i_global:
         writevm(f'storeg {ptr_i}')
     else:
         writevm(f'storel {ptr_i}')
-        flag = 0
 
     writevm(f'{parser.label}:')
     parser.label_stack.append(parser.label)
     parser.label += 1
-    writevm(f'pushl {ptr_i}')
+    if ptr_i_global:
+        writevm(f'pushg {ptr_i}')
+    else:
+        writevm(f'pushl {ptr_i}')
+    writevm(f"// ^ i")
     writevm(f'pushl {ptr_fim}')
+    writevm(f"// ^ 0fim")
     writevm(f'inf')
     writevm(f'jz {parser.label}')
     parser.label_stack.append(parser.label)
     parser.label += 1
 
-    p[0] = (ptr_i, flag)
+    p[0] = (ptr_i, ptr_i_global)
 
 
 def p_id_para(p):
@@ -777,7 +867,8 @@ def p_id_para(p):
         inicializacao0(tipo)
         ptr_i = escopo_alloc(p[1], tipo)
 
-    p[0] = ptr_i
+    flag = p[1] in parser.decls_global
+    p[0] = (ptr_i, flag)
 
 
 def p_ciclo_enquanto(p):

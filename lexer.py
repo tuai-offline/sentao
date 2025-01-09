@@ -28,6 +28,7 @@ reserved = {
     'ler': '_LER',
     'leri': '_LERI',
     'lerr': '_LERR',
+    'len': '_LEN',
     'inicio': '_INICIO',
     'def': '_DEF',
 }

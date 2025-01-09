@@ -1,0 +1,15 @@
+auto a = [5, 3, 5, 1, 2, 5, 3, 5, 1, 2, 2]
+
+para i no intervalo(0, len(a)) {
+    para j no intervalo(0, len(a) - 1) {
+        se (a[j] > a[j+1]) entao {
+            int t = a[j]
+            a[j] = a[j+1]
+            a[j+1] = t
+        }
+    }
+}
+
+para i no intervalo(0, len(a)) {
+    escrevei(a[i])
+}

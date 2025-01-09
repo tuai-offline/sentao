@@ -33,6 +33,7 @@ Tipo          : _INT
               | Tipo [ INT ]
 
 Atribuicao    : ID = Expressao
+              | Indexacao = Expressao
 
 ChamarFuncao  : ID "(" ")"
               | _ESCREVE "(" Expressao ")"
@@ -42,9 +43,10 @@ ChamarFuncao  : ID "(" ")"
               | _LERI "(" ")"
               | _LERR "(" ")"
 
-Indexacao     : ID Indices
+Indexacao     : ID "[" Expressao "]"
+--Indexacao   : ID Indices
 
-Indices       : "[" INT "]"
+Indices       : "[" Expressao "]"
               | Indices "[" INT "]"
 
 Expressao     : ID
