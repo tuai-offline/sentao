@@ -1,0 +1,112 @@
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 40px);
+}
+
+.output-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: calc(100vh - 80px);
+    overflow: hidden;
+}
+
+.editor-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.CodeMirror {
+    min-height: calc(100vh - 180px);
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.output-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    overflow: hidden;
+}
+
+.output-ewvm, .output-program {
+    margin: 10px 0;
+    height: calc(50% - 30px);
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.copy-btn {
+    padding: 4px 12px;
+    background-color: #666;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.copy-btn:hover {
+    background-color: #555;
+}
+
+.copy-btn.success {
+    background-color: #4CAF50;
+}
+
+#output-ewvm, #output-program {
+    height: calc(100% - 70px);
+    margin: 0;
+    padding: 10px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    font-family: monospace;
+    white-space: pre;
+}
+
+#run-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#run-btn:hover {
+    background-color: #45a049;
+}
