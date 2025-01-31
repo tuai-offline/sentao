@@ -7,7 +7,11 @@ import os
 app = Flask(__name__)
 
 # Configure CORS para aceitar requisições do seu domínio Netlify
-CORS(app, origins=['https://loquacious-crumble-b743a9.netlify.app'])
+CORS(app, origins=[
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://loquacious-crumble-b743a9.netlify.app'
+])
 
 @app.route('/compile', methods=['POST'])
 def compile():
@@ -65,4 +69,5 @@ def compile():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)

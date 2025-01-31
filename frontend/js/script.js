@@ -19,7 +19,7 @@ editor.setValue(`def int inicio() {
 // URL do backend - altere para a URL do seu backend quando estiver implantado
 const BACKEND_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000'
-    : 'https://seu-backend-url.com'; // Substitua com a URL do seu backend implantado
+    : 'https://sentao-backend.onrender.com'; // Substitua com sua URL do Render
 
 document.getElementById("run-btn").addEventListener("click", async function() {
     const button = this;
