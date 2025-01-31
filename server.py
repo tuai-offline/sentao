@@ -11,7 +11,7 @@ CORS(app, origins=[
     'http://localhost:3000',
     'http://localhost:5000',
     'https://loquacious-crumble-b743a9.netlify.app',
-    'https://seu-app.herokuapp.com'  # Adicione seu domínio Heroku aqui
+    'https://sentao-52a3a4bd6abc.herokuapp.com'  # URL atualizada do Heroku
 ])
 
 @app.route('/compile', methods=['POST'])

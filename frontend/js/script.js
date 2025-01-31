@@ -19,7 +19,7 @@ editor.setValue(`def int inicio() {
 // URL do backend - altere para a URL do seu backend quando estiver implantado
 const BACKEND_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000'
-    : 'https://seu-app.herokuapp.com'; // Substitua com sua URL do Heroku
+    : 'https://sentao-52a3a4bd6abc.herokuapp.com'; // URL atualizada do Heroku
 
 document.getElementById("run-btn").addEventListener("click", async function() {
     const button = this;
