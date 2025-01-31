@@ -10,6 +10,7 @@ CORS(app)
 @app.route('/compile', methods=['POST'])
 def compile():
     try:
+        print("Received request:", request.get_json())
         code = request.json['code']
         
         def clean_ansi(text):
@@ -55,6 +56,7 @@ def compile():
         })
 
     except Exception as e:
+        print("Server error:", str(e))
         return jsonify({
             'error': str(e),
             'error_type': 'server_error'

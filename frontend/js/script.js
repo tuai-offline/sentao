@@ -22,20 +22,31 @@ editor.setValue(`def int inicio() {
 }`);
 
 document.getElementById("run-btn").addEventListener("click", async function() {
+    const button = this;
     const code = editor.getValue();
     const outputEwvm = document.getElementById("output-ewvm");
     const outputProgram = document.getElementById("output-program");
     
     try {
+        // Disable button and show loading state
+        button.disabled = true;
         outputProgram.textContent = "Executando o código...\n";
+        document.querySelector('.editor-container').classList.add('loading');
         
-        const response = await fetch('/compile', {
+        const response = await fetch('http://localhost:5000/compile', {  // Especifique a URL completa
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'  // Adicione este header
             },
             body: JSON.stringify({ code: code })
         });
+
+        // Verifique se a resposta é JSON antes de tentar fazer o parse
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Resposta não-JSON do servidor: ${await response.text()}`);
+        }
 
         const result = await response.json();
 
@@ -55,7 +66,11 @@ document.getElementById("run-btn").addEventListener("click", async function() {
 
     } catch (error) {
         outputEwvm.textContent = '';
-        outputProgram.textContent = "Erro de conexão: " + error.message;
+        outputProgram.textContent = `Erro de conexão: ${error.message}\n\nVerifique se o servidor está rodando em http://localhost:5000`;
+    } finally {
+        // Re-enable button and remove loading state
+        button.disabled = false;
+        document.querySelector('.editor-container').classList.remove('loading');
     }
 });
 
