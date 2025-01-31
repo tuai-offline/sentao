@@ -1,13 +1,11 @@
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import tempfile
 import subprocess
 import os
 
-app = Flask(__name__, static_url_path='', static_folder='static')
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
+app = Flask(__name__)
+CORS(app)
 
 @app.route('/compile', methods=['POST'])
 def compile():
