@@ -70,5 +70,6 @@ def compile():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
+    # Heroku fornece a porta através da variável de ambiente PORT
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
