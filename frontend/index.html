@@ -1,4 +1,38 @@
-// Replace any fetch calls to '/compile' with the full backend URL
-fetch('https://your-backend-url/compile', {
-  // ... rest of fetch configuration
-}) 
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentão IDE Online</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="editor-container">
+            <h2>Editor</h2>
+            <textarea id="code-editor"></textarea>
+            <button id="run-btn">Executar</button>
+        </div>
+        <div class="output-container">
+            <div class="output-ewvm">
+                <div class="output-header">
+                    <h2>EWVM</h2>
+                </div>
+                <pre id="output-ewvm"></pre>
+            </div>
+            <div class="output-program">
+                <div class="output-header">
+                    <h2>Saída do Programa</h2>
+                </div>
+                <pre id="output-program"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html> 
