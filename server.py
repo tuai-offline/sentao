@@ -10,7 +10,8 @@ app = Flask(__name__)
 CORS(app, origins=[
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://loquacious-crumble-b743a9.netlify.app'
+    'https://loquacious-crumble-b743a9.netlify.app',
+    'https://seu-app.herokuapp.com'  # Adicione seu domínio Heroku aqui
 ])
 
 @app.route('/compile', methods=['POST'])
