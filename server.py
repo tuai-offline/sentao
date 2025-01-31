@@ -5,7 +5,9 @@ import subprocess
 import os
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS para aceitar requisições do seu domínio Netlify
+CORS(app, origins=['https://loquacious-crumble-b743a9.netlify.app'])
 
 @app.route('/compile', methods=['POST'])
 def compile():

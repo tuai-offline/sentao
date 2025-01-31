@@ -12,14 +12,14 @@ let editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
 
 // Exemplo de código inicial
 editor.setValue(`def int inicio() {
-    int x;
-    x = 10;
-    enquanto (x > 0) faca {
-        escrevei(x);
-        x = x - 1;
-    }
+    escreve("Olá, mundo!")
     retorna 0;
 }`);
+
+// URL do backend - altere para a URL do seu backend quando estiver implantado
+const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000'
+    : 'https://seu-backend-url.com'; // Substitua com a URL do seu backend implantado
 
 document.getElementById("run-btn").addEventListener("click", async function() {
     const button = this;
@@ -33,11 +33,11 @@ document.getElementById("run-btn").addEventListener("click", async function() {
         outputProgram.textContent = "Executando o código...\n";
         document.querySelector('.editor-container').classList.add('loading');
         
-        const response = await fetch('http://localhost:5000/compile', {  // Especifique a URL completa
+        const response = await fetch(`${BACKEND_URL}/compile`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'  // Adicione este header
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ code: code })
         });
@@ -66,7 +66,7 @@ document.getElementById("run-btn").addEventListener("click", async function() {
 
     } catch (error) {
         outputEwvm.textContent = '';
-        outputProgram.textContent = `Erro de conexão: ${error.message}\n\nVerifique se o servidor está rodando em http://localhost:5000`;
+        outputProgram.textContent = `Erro de conexão: ${error.message}\n\nServidor indisponível. Por favor, tente novamente mais tarde.`;
     } finally {
         // Re-enable button and remove loading state
         button.disabled = false;
