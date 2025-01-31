@@ -19,7 +19,7 @@ editor.setValue(`def int inicio() {
 // URL do backend - altere para a URL do seu backend quando estiver implantado
 const BACKEND_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000'
-    : 'https://loquacious-crumble-b743a9.netlify.app/'; // Substitua com sua URL do Render
+    : 'https://sentao-backend.onrender.com'; // Substitua com sua URL do Render
 
 document.getElementById("run-btn").addEventListener("click", async function() {
     const button = this;
@@ -66,7 +66,9 @@ document.getElementById("run-btn").addEventListener("click", async function() {
 
     } catch (error) {
         outputEwvm.textContent = '';
-        outputProgram.textContent = `Erro de conexão: ${error.message}\n\nServidor indisponível. Por favor, tente novamente mais tarde.`;
+        outputProgram.textContent = `Erro de conexão: ${error.message}\n\n` +
+            'Se o servidor estiver inativo, a primeira requisição pode demorar até 30 segundos. ' +
+            'Por favor, tente novamente.';
     } finally {
         // Re-enable button and remove loading state
         button.disabled = false;
